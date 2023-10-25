@@ -19,7 +19,6 @@ class User(AbstractBaseUser , PermissionsMixin):
     kakaoid = models.CharField(unique=True,max_length=100)
     name = models.CharField(max_length=50,default="name")
     profile = models.ImageField(upload_to="Userprofile/", null=True ,blank=True) 
-    type = models.CharField(max_length=10,default='POST')  
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

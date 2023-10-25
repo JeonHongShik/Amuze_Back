@@ -116,7 +116,7 @@ class KakaoLoginCallbackView(APIView):
 
         try:
             # 기존 디비에 있는 사용자 정보를 찾습니다.
-            user_info = User.objects.get(id=kakao_response["id"])
+            user_info = User.objects.get(kakaoid=kakao_response["id"])
             # 기존 사용자는 응답에 ID와 "exist": True를 포함합니다.
             serializer = UserSerializer(user_info)
             login(request, user_info)  # 로그인 세션 생성

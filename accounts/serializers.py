@@ -10,7 +10,6 @@ class UserSerializer(serializers.ModelSerializer):
             "kakaoid",
             "name",
             "profile",
-            "type",
             "created_at",
             "is_active",
             "is_staff",
