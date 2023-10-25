@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+import os
 
 class UserManager(BaseUserManager):
     def create_user(self, kakaoid, name, password=None):
@@ -18,7 +21,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser , PermissionsMixin):
     kakaoid = models.CharField(unique=True,max_length=100)
     name = models.CharField(max_length=50,default="name")
-    profile = models.ImageField(upload_to="Userprofile/", null=True ,blank=True) 
+    profile = models.ImageField(upload_to="Userprofile/%Y%m%d", null=True ,blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -33,3 +36,18 @@ class User(AbstractBaseUser , PermissionsMixin):
 
     def has_module_perms(self, app_label):  # 특정 어플리케이션에 대한 권한 확인
         return True
+    
+@receiver(pre_save, sender=User)
+def delete_old_image(sender,instance,*args,**kwargs):
+    if instance.pk:
+        try:
+            old_img = User.objects.get(pk=instance.pk).profile
+        except User.DoesNotExist:
+            return
+        else:
+            new_img = instance.profile
+            if old_img and old_img.url != new_img.url:
+                old_img_path = old_img.path
+                os.remove(old_img_path)
+        finally:
+            pass
