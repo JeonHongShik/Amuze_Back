@@ -36,10 +36,10 @@ class SignupView(BaseUserView):
             return Response({"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         # 프로필 이미지 저장
-        if profile_image:
-            format, imgstr = profile_image.split(';base64,') 
-            ext = format.split('/')[-1] 
-            user.profile.save(f"{user.kakaoid}.{ext}", ContentFile(base64.b64decode(imgstr)), save=True)
+        # if profile_image:
+        #     format, imgstr = profile_image.split(';base64,') 
+        #     ext = format.split('/')[-1] 
+        #     user.profile.save(f"{user.kakaoid}.{ext}", ContentFile(base64.b64decode(imgstr)), save=True)
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
