@@ -36,16 +36,30 @@ class User(AbstractBaseUser , PermissionsMixin):
         return True
     
 @receiver(pre_save, sender=User)
-def delete_old_image(sender,instance,*args,**kwargs):
+def delete_old_image(sender, instance, *args, **kwargs):
     if instance.pk:
         try:
-            old_img = User.objects.get(pk=instance.pk).profile
+            old_instance = User.objects.get(pk=instance.pk)
         except User.DoesNotExist:
             return
         else:
-            new_img = instance.profile
-            if old_img and old_img.url != new_img.url:
-                old_img_path = old_img.path
-                os.remove(old_img_path)
-        finally:
-            pass
+            # old_instance의 이미지가 실제로 존재하는지 확인
+            try:
+                old_path = old_instance.profile.path
+            except ValueError:
+                # 이미지가 없으면 path 속성에 접근할 수 없습니다.
+                return
+            else:
+                if os.path.isfile(old_path):
+                    # 이미지가 삭제되는 경우
+                    if not instance.profile:
+                        os.remove(old_path)
+                    # 이미지가 변경되는 경우
+                    elif instance.profile and hasattr(instance.profile, 'url'):
+                        try:
+                            new_path = instance.profile.path
+                        except ValueError:
+                            os.remove(old_path)
+                        else:
+                            if old_path != new_path:
+                                os.remove(old_path)
