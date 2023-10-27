@@ -5,14 +5,6 @@ from .models import consumer
 class ConsumerSerializer(serializers.ModelSerializer):
     class Meta:
         model = consumer
-        fields = [
-            "id",
-            "kakaoid",
-            "name",
-            "get_image",
-            "created_at",
-            "is_active",
-        ]
-        # fields = "__all__"
+        fields = "__all__"
         
 
