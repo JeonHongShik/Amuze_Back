@@ -35,12 +35,6 @@ class SignupView(BaseUserView):
         if not created:
             return Response({"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 프로필 이미지 저장
-        # if profile_image:
-        #     format, imgstr = profile_image.split(';base64,') 
-        #     ext = format.split('/')[-1] 
-        #     user.profile.save(f"{user.kakaoid}.{ext}", ContentFile(base64.b64decode(imgstr)), save=True)
-
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -61,15 +55,12 @@ class UserListView(BaseUserView):
         
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-
 class UserDetailsView(BaseUserView):
-
     def get(self, request, kakaoid):
         user = self.get_user(kakaoid)
         serializer=UserSerializer(user)
         
         return Response(serializer.data)
-
 
 class UpdateDeleteUserView(BaseUserView):  
 
@@ -91,7 +82,7 @@ class UpdateDeleteUserView(BaseUserView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
-    def delete(self,request,kakaoid):  
+    def delete(self,request,kakaoid):
         user = self.get_user(kakaoid)
     
         operation=user.delete()  
@@ -103,10 +94,6 @@ class UpdateDeleteUserView(BaseUserView):
             response={"message":"Delete operation failed"}  
 
         return Response(response)
-
-
-
-
 
 
 

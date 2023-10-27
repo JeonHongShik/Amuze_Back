@@ -9,9 +9,10 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "kakaoid",
             "name",
-            "profile",
+            "get_image",
             "created_at",
             "is_active",
-            "is_staff",
         ]
         # fields = "__all__"
+        
+

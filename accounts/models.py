@@ -23,6 +23,7 @@ class User(AbstractBaseUser , PermissionsMixin):
     name = models.CharField(max_length=50,default="name")
     profile = models.ImageField(upload_to="Userprofile/%Y%m%d", null=True ,blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
+    retouch_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
