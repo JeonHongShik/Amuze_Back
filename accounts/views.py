@@ -23,14 +23,17 @@ class SignupView(BaseUserView):
     def post(self, request):
         kakaoid = request.data.get('kakaoid')
         name = request.data.get('name')
-        profile_image = request.data.get('profile')
+        profile = request.data.get('profile')
 
         # 입력 유효성 검사
         if not kakaoid or not name:
             return Response({"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         # 이미 존재하는 사용자 체크 및 생성
-        user, created = User.objects.get_or_create(kakaoid=kakaoid, defaults={'name': name})
+        user, created = User.objects.get_or_create(
+            kakaoid=kakaoid,    
+            defaults={'name': name, 'profile': profile}  # 이미지 파일 처리
+        )
 
         if not created:
             return Response({"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST)
