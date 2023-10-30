@@ -12,7 +12,7 @@ import base64
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication] JWT 미사용
 
     def get_user(self, kakaoid):
         return get_object_or_404(User, kakaoid=kakaoid)
@@ -67,7 +67,7 @@ class UserDetailsView(BaseUserView):
 
 class UpdateDeleteUserView(BaseUserView):  
 
-    def put(self,request,kakaoid):  
+    def put(self,request,kakaoid):
         user = self.get_user(kakaoid)
 
         data=request.data.copy()  

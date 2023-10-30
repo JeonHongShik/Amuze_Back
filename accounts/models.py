@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 import os
 
@@ -63,3 +63,8 @@ def delete_old_image(sender, instance, *args, **kwargs):
                         else:
                             if old_path != new_path:
                                 os.remove(old_path)
+
+@receiver(post_delete, sender=User)
+def delete_profile_image(sender, instance , **kwargs):
+    if delete_profile_image:
+        instance.profile.delete(save=False)

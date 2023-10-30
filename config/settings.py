@@ -55,11 +55,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
 
-    #추가한 프레임워크
+    #add framework
     'rest_framework',
     'drf_yasg',
-    
-    #추가한 앱
+
+    #add app
     'accounts',
     'consumer',
 ]
@@ -131,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
