@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 import os
 
@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
         return user
 
 class User(AbstractBaseUser , PermissionsMixin):
-    kakaoid = models.CharField(unique=True,max_length=100)
+    kakaoid = models.CharField(unique=True, primary_key=True, max_length=20)
     name = models.CharField(max_length=50,default="name")
     profile = models.ImageField(upload_to="Userprofile/%Y%m%d", null=True ,blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -63,3 +63,8 @@ def delete_old_image(sender, instance, *args, **kwargs):
                         else:
                             if old_path != new_path:
                                 os.remove(old_path)
+
+@receiver(post_delete, sender=User)
+def delete_profile_image(sender, instance , **kwargs):
+    if delete_profile_image:
+        instance.profile.delete(save=False)

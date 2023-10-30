@@ -12,7 +12,7 @@ import base64
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication] JWT 미사용
 
     def get_user(self, kakaoid):
         return get_object_or_404(User, kakaoid=kakaoid)
@@ -31,7 +31,7 @@ class SignupView(BaseUserView):
 
         # 이미 존재하는 사용자 체크 및 생성
         user, created = User.objects.get_or_create(
-            kakaoid=kakaoid,    
+            kakaoid=kakaoid,
             defaults={'name': name, 'profile': profile}  # 이미지 파일 처리
         )
 
@@ -67,7 +67,7 @@ class UserDetailsView(BaseUserView):
 
 class UpdateDeleteUserView(BaseUserView):  
 
-    def put(self,request,kakaoid):  
+    def put(self,request,kakaoid):
         user = self.get_user(kakaoid)
 
         data=request.data.copy()  
