@@ -21,84 +21,100 @@ class SignupView(BaseUserView):
 
     @transaction.atomic
     def post(self, request):
-        kakaoid = request.data.get('kakaoid')
-        name = request.data.get('name')
-        profile = request.data.get('profile')
+        try:
+            kakaoid = request.data.get('kakaoid')
+            name = request.data.get('name')
+            profile = request.data.get('profile')
 
-        # 입력 유효성 검사
-        if not kakaoid or not name:
-            return Response({"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            # 입력 유효성 검사
+            if not kakaoid or not name:
+                return Response({"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 이미 존재하는 사용자 체크 및 생성
-        user, created = User.objects.get_or_create(
-            kakaoid=kakaoid,
-            defaults={'name': name, 'profile': profile}  # 이미지 파일 처리
-        )
+            # 이미 존재하는 사용자 체크 및 생성
+            user, created = User.objects.get_or_create(
+                kakaoid=kakaoid,
+                defaults={'name': name, 'profile': profile}  # 이미지 파일 처리
+            )
 
-        if not created:
-            return Response({"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            if not created:
+                return Response({"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 class UserListView(BaseUserView):
-
+    @transaction.atomic
     def get(self, request):
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+        try:
+            users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
     def post(self,request):
-        serializer=UserSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        
-        return Response({"400 error"},serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer=UserSerializer(data=request.data)
+            
+            if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response({"400 error"},serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UserDetailsView(BaseUserView):
     def get(self, request, kakaoid):
-        user = self.get_user(kakaoid)
-        serializer=UserSerializer(user)
-        
-        return Response(serializer.data)
+        try:
+            user = self.get_user(kakaoid)
+            serializer=UserSerializer(user)
+            
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UpdateDeleteUserView(BaseUserView):  
 
     def put(self,request,kakaoid):
-        user = self.get_user(kakaoid)
+        try:    
+            user = self.get_user(kakaoid)
 
-        data=request.data.copy()  
+            data=request.data.copy()  
 
-        if "profile" in request.FILES:  
-            user_image=request.FILES["profile"]
-            data["profile"]=user_image
-        
-        serializer=UserSerializer(user,data=data)
+            if "profile" in request.FILES:  
+                user_image=request.FILES["profile"]
+                data["profile"]=user_image
+            
+            serializer=UserSerializer(user,data=data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data) 
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data) 
 
-        return Response({"400 error"},serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"400 error"},serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self,request,kakaoid):
-        user = self.get_user(kakaoid)
-    
-        operation=user.delete()  
+        try:    
+            user = self.get_user(kakaoid)
+        
+            operation=user.delete()  
 
-        if operation:  
-            response={"message":"Successfully deleted the requested id"}  
+            if operation:  
+                response={"message":"Successfully deleted the requested id"}  
 
-        else:   
-            response={"message":"Delete operation failed"}  
+            else:   
+                response={"message":"Delete operation failed"}  
 
-        return Response(response)
-
-
+            return Response(response)
+        except Exception as e:
+            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # User = get_user_model()
