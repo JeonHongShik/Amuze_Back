@@ -14,26 +14,31 @@ class BaseUserView(APIView):
     permission_classes = [AllowAny]
     # authentication_classes = [TokenAuthentication] JWT 미사용
 
-    def get_user(self, kakaoid):
-        return get_object_or_404(User, kakaoid=kakaoid)
+    def get_user(self, email):
+        return get_object_or_404(User, email=email)
 
 class SignupView(BaseUserView):
 
     @transaction.atomic
     def post(self, request):
         try:
-            kakaoid = request.data.get('kakaoid')
-            name = request.data.get('name')
-            profile = request.data.get('profile')
+            lst = request.data
+            kakaoid = lst.get('kakaoid')
+            appleid = lst.get('appleid')
+            email = lst.get('email')
+            name = lst.get('name')
+            profile = lst.get('profile')
 
+            print(lst)
+            
             # 입력 유효성 검사
-            if not kakaoid or not name:
+            if not email or not name:
                 return Response({"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
             # 이미 존재하는 사용자 체크 및 생성
             user, created = User.objects.get_or_create(
-                kakaoid=kakaoid,
-                defaults={'name': name, 'profile': profile}  # 이미지 파일 처리
+                email=email,
+                defaults={'name': name, 'profile': profile, 'kakaoid': kakaoid, 'appleid': appleid}  # 이미지 파일 처리
             )
 
             if not created:
@@ -44,7 +49,6 @@ class SignupView(BaseUserView):
 
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 class UserListView(BaseUserView):
@@ -69,9 +73,9 @@ class UserListView(BaseUserView):
             return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UserDetailsView(BaseUserView):
-    def get(self, request, kakaoid):
+    def get(self, request, email):
         try:
-            user = self.get_user(kakaoid)
+            user = self.get_user(email)
             serializer=UserSerializer(user)
             
             return Response(serializer.data)
@@ -80,9 +84,9 @@ class UserDetailsView(BaseUserView):
 
 class UpdateDeleteUserView(BaseUserView):  
 
-    def put(self,request,kakaoid):
+    def put(self,request,email):
         try:    
-            user = self.get_user(kakaoid)
+            user = self.get_user(email)
 
             data=request.data.copy()  
 
@@ -100,9 +104,9 @@ class UpdateDeleteUserView(BaseUserView):
         except Exception as e:
             return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def delete(self,request,kakaoid):
+    def delete(self,request,email):
         try:    
-            user = self.get_user(kakaoid)
+            user = self.get_user(email)
         
             operation=user.delete()  
 

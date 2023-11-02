@@ -5,23 +5,25 @@ from django.dispatch import receiver
 import os
 
 class UserManager(BaseUserManager):
-    def create_user(self, kakaoid, name, password=None):
-        user = self.model(kakaoid=kakaoid, name=name)
+    def create_user(self, email, name, password=None):
+        user = self.model(email=email, name=name)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self,kakaoid,name,password):
-        user = self.create_user(kakaoid=kakaoid,name=name,password=password)
+    def create_superuser(self,email,name,password):
+        user = self.create_user(email=email,name=name,password=password)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
         return user
 
 class User(AbstractBaseUser , PermissionsMixin):
-    kakaoid = models.CharField(unique=True, primary_key=True, max_length=20)
-    name = models.CharField(max_length=50,default="name")
-    profile = models.ImageField(upload_to="Userprofile/%Y%m%d", null=True ,blank=True) 
+    email = models.EmailField(primary_key=True , unique=True , default="default@email.com")
+    kakao_id = models.TextField(unique=True, null=True , blank=True)
+    apple_id = models.TextField(unique=True, null=True , blank=True)
+    name = models.CharField(max_length=50, default="name")
+    profile = models.ImageField(upload_to="Userprofile/%Y%m%d",null=True ,blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -29,9 +31,12 @@ class User(AbstractBaseUser , PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = "kakaoid"
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 
+    def __str__(self) -> str:
+        return self.name
+    
     def has_module_perms(self, app_label):  # 특정 어플리케이션에 대한 권한 확인
         return True
     

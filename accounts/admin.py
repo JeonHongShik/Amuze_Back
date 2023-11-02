@@ -5,8 +5,8 @@ from .models import User
 
 # Register your models here.
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['kakaoid','name','get_image','created_at','is_active']
-    list_display_links = ['kakaoid']
+    list_display = ['email','kakao_id','apple_id','name','get_image','created_at','is_active']
+    list_display_links = ['email']
     list_per_page = 10
 
     def get_image(self, obj):

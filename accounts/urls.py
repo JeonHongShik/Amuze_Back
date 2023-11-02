@@ -3,8 +3,8 @@ from .views import UserListView, SignupView ,UserDetailsView,UpdateDeleteUserVie
 
 urlpatterns = [
     path('users/', UserListView.as_view()),
-    path('users/detail/<str:kakaoid>/', UserDetailsView.as_view()),
-    path('users/delete/<str:kakaoid>/', UpdateDeleteUserView.as_view()),
-    path('users/update/<str:kakaoid>/', UpdateDeleteUserView.as_view()),
+    path('users/detail/<str:email>/', UserDetailsView.as_view()),
+    path('users/delete/<str:email>/', UpdateDeleteUserView.as_view()),
+    path('users/update/<str:email>/', UpdateDeleteUserView.as_view()),
     path('signup/', SignupView.as_view()),
 ]
