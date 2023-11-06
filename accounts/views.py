@@ -167,9 +167,7 @@ class UserListView(BaseUserView):
 #     # 카카오 로그인의 콜백을 처리하는 post 메서드
 #     def post(self, request):
 #         # 요청에서 액세스 토큰을 가져옵니다.
-#         kakao_access_code = request.data.get(
-#             "X60MMprpURx-CKHz-RggxlX7dkId2lXUfmUKKiWQAAABi6Q1f66o9NUiJo7xnA"
-#         )
+#         kakao_access_code = request.data.get("accessToken")
 
 #         # 액세스 토큰이 제공되지 않았을 경우 에러 메시지와 함께 400 상태 코드를 반환합니다.
 #         if not kakao_access_code:
