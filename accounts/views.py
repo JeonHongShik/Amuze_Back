@@ -2,53 +2,116 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from rest_framework.authentication import TokenAuthentication
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from django.core.files.base import ContentFile
 from .models import User
 from .serializers import UserSerializer
-import base64
+
+# User = get_user_model()
+
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
-    # authentication_classes = [TokenAuthentication] JWT 미사용
 
-    def get_user(self, email):
-        return get_object_or_404(User, email=email)
+    def get_user(self, Uidd):
+        return get_object_or_404(User, Uidd=Uidd)
 
-class SignupView(BaseUserView):
 
+class accountsViews(BaseUserView):
     @transaction.atomic
     def post(self, request):
         try:
             lst = request.data
-            kakaoid = lst.get('kakaoid')
-            appleid = lst.get('appleid')
-            email = lst.get('email')
-            name = lst.get('name')
-            profile = lst.get('profile')
+            Uidd = lst.get("Uidd")
+            name = lst.get("name")
+            profile = lst.get("profile")
 
             print(lst)
-            
+
             # 입력 유효성 검사
-            if not email or not name:
-                return Response({"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            if not Uidd or not name:
+                return Response(
+                    {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
+                )
 
             # 이미 존재하는 사용자 체크 및 생성
             user, created = User.objects.get_or_create(
-                email=email,
-                defaults={'name': name, 'profile': profile, 'kakaoid': kakaoid, 'appleid': appleid}  # 이미지 파일 처리
+                Uidd=Uidd,
+                defaults={
+                    "name": name,
+                    "profile": profile,
+                },  # 이미지 파일 처리
             )
 
             if not created:
-                return Response({"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST
+                )
 
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class UserDetailsView(BaseUserView):
+    def get(self, request, Uidd):
+        try:
+            user = self.get_user(Uidd)
+            serializer = UserSerializer(user)
+
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class UpdateDeleteUserView(BaseUserView):
+    def put(self, request, Uidd):
+        try:
+            user = self.get_user(Uidd)
+
+            data = request.data.copy()
+
+            if "profile" in request.FILES:
+                user_image = request.FILES["profile"]
+                data["profile"] = user_image
+
+            serializer = UserSerializer(user, data=data)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+
+            return Response(
+                {"400 error"}, serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def delete(self, request, Uidd):
+        try:
+            user = self.get_user(Uidd)
+
+            operation = user.delete()
+
+            if operation:
+                response = {"message": "계정 삭제 완료"}
+
+            else:
+                response = {"message": "계정 삭제 실패"}
+
+            return Response(response)
+        except Exception as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class UserListView(BaseUserView):
@@ -59,80 +122,36 @@ class UserListView(BaseUserView):
             serializer = UserSerializer(users, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    def post(self,request):
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def post(self, request):
         try:
-            serializer=UserSerializer(data=request.data)
-            
-            if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data,status=status.HTTP_201_CREATED)
-            return Response({"400 error"},serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class UserDetailsView(BaseUserView):
-    def get(self, request, email):
-        try:
-            user = self.get_user(email)
-            serializer=UserSerializer(user)
-            
-            return Response(serializer.data)
-        except Exception as e:
-            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class UpdateDeleteUserView(BaseUserView):  
-
-    def put(self,request,email):
-        try:    
-            user = self.get_user(email)
-
-            data=request.data.copy()  
-
-            if "profile" in request.FILES:  
-                user_image=request.FILES["profile"]
-                data["profile"]=user_image
-            
-            serializer=UserSerializer(user,data=data)
+            serializer = UserSerializer(data=request.data)
 
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data) 
-
-            return Response({"400 error"},serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                {"400 error"}, serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self,request,email):
-        try:    
-            user = self.get_user(email)
-        
-            operation=user.delete()  
-
-            if operation:  
-                response={"message":"Successfully deleted the requested id"}  
-
-            else:   
-                response={"message":"Delete operation failed"}  
-
-            return Response(response)
-        except Exception as e:
-            return Response({"detail" : str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
-# User = get_user_model()
-
-
-# class KakaoLoginCallbackView(APIView):
+# class KakaoLoginCallbackView(BaseUserView):
 #     # 카카오 회원 정보를 받아와서 새로운 User 인스턴스를 생성하는 함수
 #     @staticmethod
 #     def _create_kakao_user(kakao_response):
 #         return User.objects.create(
-#             kakaoid=kakao_response["id"],
+#             Uidd=kakao_response["id"],
 #             name=kakao_response["kakao_account"]["profile"]["nickname"],
 #             profile=kakao_response["kakao_account"]["profile"]["profile_image_url"],
 #         )
+
 #     # 카카오 액세스 토큰을 통해 사용자 정보를 반환하는 함수
 #     @staticmethod
 #     def _get_kakao_user_info(access_token):
@@ -147,13 +166,16 @@ class UpdateDeleteUserView(BaseUserView):
 
 #     # 카카오 로그인의 콜백을 처리하는 post 메서드
 #     def post(self, request):
-#     # 요청에서 액세스 토큰을 가져옵니다.
-#         kakao_access_code = request.data.get("accessToken")
+#         # 요청에서 액세스 토큰을 가져옵니다.
+#         kakao_access_code = request.data.get(
+#             "X60MMprpURx-CKHz-RggxlX7dkId2lXUfmUKKiWQAAABi6Q1f66o9NUiJo7xnA"
+#         )
 
-#     # 액세스 토큰이 제공되지 않았을 경우 에러 메시지와 함께 400 상태 코드를 반환합니다.
+#         # 액세스 토큰이 제공되지 않았을 경우 에러 메시지와 함께 400 상태 코드를 반환합니다.
 #         if not kakao_access_code:
 #             return JsonResponse(
-#                 {"error": "Kakao access token is required."}, status=HTTP_400_BAD_REQUEST
+#                 {"error": "Kakao access token is required."},
+#                 status=status.HTTP_400_BAD_REQUEST,
 #             )
 #         # 액세스 토큰을 사용하여 카카오 회원 정보를 얻습니다.
 #         kakao_response = self._get_kakao_user_info(kakao_access_code)
@@ -166,7 +188,7 @@ class UpdateDeleteUserView(BaseUserView):
 #             login(request, user_info)  # 로그인 세션 생성
 #             return JsonResponse(serializer.data)
 #         except User.DoesNotExist:
-#     # 사용자 정보를 찾을 수 없는 경우 새 사용자를 생성합니다.
+#             # 사용자 정보를 찾을 수 없는 경우 새 사용자를 생성합니다.
 #             kakao_user = self._create_kakao_user(kakao_response)
 #             kakao_user.save()  # 저장
 #         return JsonResponse({"id": kakao_user.kakaoid, "exist": False}, status=201)

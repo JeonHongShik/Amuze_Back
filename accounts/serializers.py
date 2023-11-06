@@ -6,13 +6,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # fields = [
-        #     "id",
-        #     "kakaoid",
+        #     "Uidd",
         #     "name",
         #     "get_image",
         #     "created_at",
         #     "is_active",
         # ]
         fields = "__all__"
-        
-
