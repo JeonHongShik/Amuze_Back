@@ -27,7 +27,8 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     Uidd = models.TextField(primary_key=True, unique=True, default="Uidd")
     name = models.CharField(max_length=50, default="name")
-    profile = models.ImageField(upload_to="Userprofile/%Y%m%d", null=True, blank=True)
+    email = models.EmailField(max_length=100,unique=True, default="Email")
+    profile = models.URLField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -36,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "Uidd"
-    REQUIRED_FIELDS = ["name"]
+    REQUIRED_FIELDS = ["name","email"]
 
     def __str__(self) -> str:
         return self.name

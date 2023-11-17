@@ -9,13 +9,11 @@ from .serializers import UserSerializer
 
 # User = get_user_model()
 
-
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
 
     def get_user(self, Uidd):
         return get_object_or_404(User, Uidd=Uidd)
-
 
 class accountsViews(BaseUserView):
     @transaction.atomic
@@ -58,6 +56,7 @@ class accountsViews(BaseUserView):
 
 
 class UserDetailsView(BaseUserView):
+    @transaction.atomic
     def get(self, request, Uidd):
         try:
             user = self.get_user(Uidd)
@@ -71,9 +70,16 @@ class UserDetailsView(BaseUserView):
 
 
 class UpdateDeleteUserView(BaseUserView):
+    @transaction.atomic
     def put(self, request, Uidd):
         try:
             user = self.get_user(Uidd)
+
+
+            if request.user.Uidd != Uidd:
+                return Response(
+                {"detail" : " 다른 사용자의 정보를 수정할 수 없습니다."},status=status.HTTP_403_FORBIDDEN
+            )
 
             data = request.data.copy()
 
@@ -99,6 +105,11 @@ class UpdateDeleteUserView(BaseUserView):
         try:
             user = self.get_user(Uidd)
 
+
+            if request.user.Uidd != Uidd:
+                return Response(
+                    {"detail":"다른 사용자의 정보를 삭제할 수 없습니다."}, status=status.HTTP_403_FORBIDDEN
+                )
             operation = user.delete()
 
             if operation:

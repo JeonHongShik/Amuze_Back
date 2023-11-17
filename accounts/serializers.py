@@ -8,6 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
         # fields = [
         #     "Uidd",
         #     "name",
+        #     "email",
         #     "get_image",
         #     "created_at",
         #     "is_active",
