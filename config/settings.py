@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     "drf_yasg",
     # add apps
     "accounts",
-    "consumer",
 ]
 
 

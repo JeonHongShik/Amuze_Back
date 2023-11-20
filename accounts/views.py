@@ -15,7 +15,7 @@ class BaseUserView(APIView):
     def get_user(self, Uidd):
         return get_object_or_404(User, Uidd=Uidd)
 
-class accountsViews(BaseUserView):
+class accountsViews(BaseUserView): # 계정 받아오기
     @transaction.atomic
     def post(self, request):
         try:
@@ -23,11 +23,11 @@ class accountsViews(BaseUserView):
             Uidd = lst.get("Uidd")
             name = lst.get("name")
             profile = lst.get("profile")
-
+            email = list.get("email")
             print(lst)
 
             # 입력 유효성 검사
-            if not Uidd or not name:
+            if not Uidd or not name or not email:
                 return Response(
                     {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -38,6 +38,7 @@ class accountsViews(BaseUserView):
                 defaults={
                     "name": name,
                     "profile": profile,
+                    "email" : email,
                 },  # 이미지 파일 처리
             )
 
@@ -54,27 +55,23 @@ class accountsViews(BaseUserView):
                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
-class UserDetailsView(BaseUserView):
+class UserListView(BaseUserView): # 유저 정보 보기
     @transaction.atomic
-    def get(self, request, Uidd):
+    def get(self, request):
         try:
-            user = self.get_user(Uidd)
-            serializer = UserSerializer(user)
+            users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
 
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(
                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-class UpdateDeleteUserView(BaseUserView):
+class UpdateDeleteUserView(BaseUserView): # 유저 수정 및 삭제
     @transaction.atomic
     def put(self, request, Uidd):
         try:
             user = self.get_user(Uidd)
-
 
             if request.user.Uidd != Uidd:
                 return Response(
@@ -125,32 +122,7 @@ class UpdateDeleteUserView(BaseUserView):
             )
 
 
-class UserListView(BaseUserView):
-    @transaction.atomic
-    def get(self, request):
-        try:
-            users = User.objects.all()
-            serializer = UserSerializer(users, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(
-                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
-    def post(self, request):
-        try:
-            serializer = UserSerializer(data=request.data)
-
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(
-                {"400 error"}, serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
-        except Exception as e:
-            return Response(
-                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
 
 # class KakaoLoginCallbackView(BaseUserView):
