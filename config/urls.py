@@ -24,9 +24,9 @@ from django.conf import settings
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Amuze",
-        default_version="v1",
-        description="Test V1",
+        title="Amuze FireBase",
+        default_version="v2.0",
+        description="FireBase Login Version 2.0",
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
@@ -35,6 +35,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
+    path("post/", include("post.urls")),
     re_path(
         r"^swagger(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),

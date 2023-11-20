@@ -16,15 +16,3 @@ class UserSerializer(serializers.ModelSerializer):
         #     "is_active",
         # ]
         fields = "__all__"
-
-    def validate_profile(self, value):
-        parsed = urlparse(value)
-        if bool(parsed.netloc) and bool(parsed.scheme):
-            response = requests.head(value)
-            content_type = response.headers["content-type"]
-            if "profile" not in content_type:
-                raise serializers.ValidationError("URL이 이미지 파일이 아닙니다.")
-            else:
-                raise serializers.ValidationError("URL 형식이 아닙니다.")
-
-        return value
