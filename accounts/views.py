@@ -67,7 +67,7 @@ class UserListView(BaseUserView): # 유저 정보 보기
             return Response(
                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-class UpdateDeleteUserView(BaseUserView): # 유저 수정 및 삭제
+class UpdateUserView(BaseUserView): # 유저 수정 및 삭제
     @transaction.atomic
     def put(self, request, Uidd):
         try:
@@ -98,6 +98,9 @@ class UpdateDeleteUserView(BaseUserView): # 유저 수정 및 삭제
                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
+class DeleteUserView(BaseUserView): # 유저 수정 및 삭제
+    @transaction.atomic
     def delete(self, request, Uidd):
         try:
             user = self.get_user(Uidd)
