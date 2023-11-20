@@ -6,8 +6,8 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 from .models import User
 from .serializers import UserSerializer
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 
-# User = get_user_model()
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -15,7 +15,8 @@ class BaseUserView(APIView):
     def get_user(self, Uidd):
         return get_object_or_404(User, Uidd=Uidd)
 
-class accountsViews(BaseUserView): # 계정 받아오기
+
+class accountsViews(BaseUserView):  # 계정 받아오기
     @transaction.atomic
     def post(self, request):
         try:
@@ -23,8 +24,7 @@ class accountsViews(BaseUserView): # 계정 받아오기
             Uidd = lst.get("Uidd")
             name = lst.get("name")
             profile = lst.get("profile")
-            email = list.get("email")
-            print(lst)
+            email = lst.get("email")
 
             # 입력 유효성 검사
             if not Uidd or not name or not email:
@@ -38,8 +38,8 @@ class accountsViews(BaseUserView): # 계정 받아오기
                 defaults={
                     "name": name,
                     "profile": profile,
-                    "email" : email,
-                },  # 이미지 파일 처리
+                    "email": email,
+                },
             )
 
             if not created:
@@ -55,7 +55,8 @@ class accountsViews(BaseUserView): # 계정 받아오기
                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-class UserListView(BaseUserView): # 유저 정보 보기
+
+class UserListView(BaseUserView):  # 유저 정보 보기
     @transaction.atomic
     def get(self, request):
         try:
@@ -67,48 +68,53 @@ class UserListView(BaseUserView): # 유저 정보 보기
             return Response(
                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-class UpdateUserView(BaseUserView): # 유저 수정 및 삭제
+
+
+class UserDetailView(RetrieveAPIView):  # 특정 유저 정보 보기
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UpdateUserView(BaseUserView, UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
     @transaction.atomic
-    def put(self, request, Uidd):
+    def patch(self, request, Uidd, *args, **kwargs):
         try:
             user = self.get_user(Uidd)
 
             if request.user.Uidd != Uidd:
                 return Response(
-                {"detail" : " 다른 사용자의 정보를 수정할 수 없습니다."},status=status.HTTP_403_FORBIDDEN
-            )
+                    {"detail": "다른 사용자의 정보를 수정할 수 없습니다."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
             data = request.data.copy()
 
-            if "profile" in request.FILES:
-                user_image = request.FILES["profile"]
-                data["profile"] = user_image
-
-            serializer = UserSerializer(user, data=data)
+            serializer = self.get_serializer(user, data=data, partial=True)
 
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
 
-            return Response(
-                {"400 error"}, serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
-class DeleteUserView(BaseUserView): # 유저 수정 및 삭제
+class DeleteUserView(BaseUserView):  # 유저 삭제
     @transaction.atomic
     def delete(self, request, Uidd):
         try:
             user = self.get_user(Uidd)
 
-
             if request.user.Uidd != Uidd:
                 return Response(
-                    {"detail":"다른 사용자의 정보를 삭제할 수 없습니다."}, status=status.HTTP_403_FORBIDDEN
+                    {"detail": "다른 사용자의 정보를 삭제할 수 없습니다."},
+                    status=status.HTTP_403_FORBIDDEN,
                 )
             operation = user.delete()
 
@@ -123,9 +129,6 @@ class DeleteUserView(BaseUserView): # 유저 수정 및 삭제
             return Response(
                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-
 
 
 # class KakaoLoginCallbackView(BaseUserView):

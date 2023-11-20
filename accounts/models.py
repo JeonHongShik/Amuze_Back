@@ -10,13 +10,13 @@ import os
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, Uidd, name,email, password=None):
+    def create_user(self, Uidd, name, email, password=None):
         user = self.model(Uidd=Uidd, name=name, email=email)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, Uidd, name,email, password):
+    def create_superuser(self, Uidd, name, email, password):
         user = self.create_user(Uidd=Uidd, name=name, email=email, password=password)
         user.is_staff = True
         user.is_superuser = True
@@ -27,7 +27,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     Uidd = models.TextField(primary_key=True, unique=True, default="Uidd")
     name = models.CharField(max_length=50, default="name")
-    email = models.EmailField(max_length=100,unique=True, default="Email")
+    email = models.EmailField(max_length=100, unique=True, default="Email")
     profile = models.URLField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
@@ -37,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "Uidd"
-    REQUIRED_FIELDS = ["name","email"]
+    REQUIRED_FIELDS = ["name", "email"]
 
     def __str__(self) -> str:
         return self.name

@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     "accounts",  # 계정
     "bookmark",  # 즐겨찾기
     "community",  # 커뮤니티 / 댓글
-    "conumser",  # 이력서
+    "consumer",  # 이력서
     "post",  # 공고
     "report",  # 신고
 ]
