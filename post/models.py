@@ -29,6 +29,7 @@ class Post(models.Model):
     
     def get_favorited_users(self):
         return User.objects.filter(favorite__post=self)
+    
 
 
 @receiver(pre_save, sender=Post)

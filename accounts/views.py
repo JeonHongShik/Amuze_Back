@@ -12,8 +12,8 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
 
-    def get_user(self, Uidd):
-        return get_object_or_404(User, Uidd=Uidd)
+    def get_user(self, uid):
+        return get_object_or_404(User, uid=uid)
 
 
 class accountsViews(BaseUserView):  # 계정 받아오기
@@ -21,20 +21,22 @@ class accountsViews(BaseUserView):  # 계정 받아오기
     def post(self, request):
         try:
             lst = request.data
-            Uidd = lst.get("Uidd")
+            uid = lst.get("uid")
             name = lst.get("name")
             profile = lst.get("profile")
             email = lst.get("email")
 
+            print(lst)
+
             # 입력 유효성 검사
-            if not Uidd or not name or not email:
+            if not uid or not name or not email:
                 return Response(
                     {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
                 )
 
             # 이미 존재하는 사용자 체크 및 생성
             user, created = User.objects.get_or_create(
-                Uidd=Uidd,
+                uid=uid,
                 defaults={
                     "name": name,
                     "profile": profile,
@@ -70,7 +72,7 @@ class UserListView(BaseUserView):  # 유저 정보 보기
             )
 
 
-class UserDetailView(RetrieveAPIView):  # 특정 유저 정보 보기
+class UserDetailView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -80,11 +82,11 @@ class UpdateUserView(BaseUserView, UpdateAPIView):
     serializer_class = UserSerializer
 
     @transaction.atomic
-    def patch(self, request, Uidd, *args, **kwargs):
+    def patch(self, request, uid, *args, **kwargs):
         try:
-            user = self.get_user(Uidd)
+            user = self.get_user(uid)
 
-            if request.user.Uidd != Uidd:
+            if request.user.uid != uid:
                 return Response(
                     {"detail": "다른 사용자의 정보를 수정할 수 없습니다."},
                     status=status.HTTP_403_FORBIDDEN,
@@ -107,11 +109,11 @@ class UpdateUserView(BaseUserView, UpdateAPIView):
 
 class DeleteUserView(BaseUserView):  # 유저 삭제
     @transaction.atomic
-    def delete(self, request, Uidd):
+    def delete(self, request, uid):
         try:
-            user = self.get_user(Uidd)
+            user = self.get_user(uid)
 
-            if request.user.Uidd != Uidd:
+            if request.user.uid != uid:
                 return Response(
                     {"detail": "다른 사용자의 정보를 삭제할 수 없습니다."},
                     status=status.HTTP_403_FORBIDDEN,
@@ -136,7 +138,7 @@ class DeleteUserView(BaseUserView):  # 유저 삭제
 #     @staticmethod
 #     def _create_kakao_user(kakao_response):
 #         return User.objects.create(
-#             Uidd=kakao_response["id"],
+#             uid=kakao_response["id"],
 #             name=kakao_response["kakao_account"]["profile"]["nickname"],
 #             profile=kakao_response["kakao_account"]["profile"]["profile_image_url"],
 #         )

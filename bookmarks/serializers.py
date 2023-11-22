@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import Favorite, Post, User
+from .models import bookmark
 
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Favorite
+        model = bookmark
         fields = ['user', 'post', 'created_at']

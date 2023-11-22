@@ -8,11 +8,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # fields = [
-        #     "Uidd",
+        #     "uid",
         #     "name",
         #     "email",
         #     "profile",
         #     "created_at",
         #     "is_active",
         # ]
+
         fields = "__all__"
