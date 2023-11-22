@@ -26,6 +26,9 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.author}님이 작성한 게시글 입니다."
+    
+    def get_favorited_users(self):
+        return User.objects.filter(favorite__post=self)
 
 
 @receiver(pre_save, sender=Post)

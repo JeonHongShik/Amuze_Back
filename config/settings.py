@@ -58,8 +58,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_yasg",
     # add apps
+    "bookmarks", # 즐겨찾기
     "accounts",  # 계정
-    "bookmark",  # 즐겨찾기
     "community",  # 커뮤니티 / 댓글
     "consumer",  # 이력서
     "post",  # 공고

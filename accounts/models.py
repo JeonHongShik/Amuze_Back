@@ -42,6 +42,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self) -> str:
         return self.name
 
+    def get_favorites(self):
+        return self.favorite_set.all()
+    
     def has_module_perms(self, app_label):  # 특정 어플리케이션에 대한 권한 확인
         return True
 
