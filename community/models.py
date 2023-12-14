@@ -28,15 +28,3 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment on {self.board.title}"
-
-
-class Reply(models.Model):
-    comment = models.ForeignKey(
-        Comment, on_delete=models.CASCADE, related_name="replies"
-    )
-    writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    content = models.TextField()
-    created_date = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Reply on {self.comment.board.title}"

@@ -1,10 +1,9 @@
 from rest_framework import generics
 from rest_framework.response import Response
-from .models import Board, Comment, Reply
+from .models import Board, Comment
 from .serializers import (
     BoardSerializer,
     CommentSerializer,
-    ReplySerializer,
 )
 
 
@@ -27,8 +26,3 @@ class BoardRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 class CommentCreateAPIView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-
-
-class ReplyCreateAPIView(generics.CreateAPIView):
-    queryset = Reply.objects.all()
-    serializer_class = ReplySerializer

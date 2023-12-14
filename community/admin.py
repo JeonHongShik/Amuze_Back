@@ -1,16 +1,11 @@
 from django.contrib import admin
-from .models import Board, Comment, Reply
-
-
-class ReplyInline(admin.TabularInline):
-    model = Reply
+from .models import Board, Comment
 
 
 class CommentAdmin(admin.ModelAdmin):
     list_display = ("board", "writer", "created_date")
     search_fields = ("board__title", "writer__username")
     list_filter = ("created_date", "writer")
-    inlines = [ReplyInline]
 
 
 @admin.register(Board)
@@ -22,4 +17,3 @@ class BoardAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Comment, CommentAdmin)
-admin.site.register(Reply)
