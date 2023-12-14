@@ -8,6 +8,7 @@ from .serializers import (
 )
 
 
+
 class BoardListAPIView(generics.ListAPIView):
     queryset = Board.objects.all()
     serializer_class = BoardSerializer

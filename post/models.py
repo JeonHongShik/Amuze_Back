@@ -5,8 +5,13 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_delete
 from accounts.models import User
 
-# Create your models here.
 
+
+class WishType(models.Model):
+    type = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.type}"
 
 class Post(models.Model):
     author = models.ForeignKey(
@@ -14,12 +19,12 @@ class Post(models.Model):
     )
     title = models.CharField(max_length=100)
     area = models.TextField()
-    concert_type = models.TextField()  # 공연 종류
-    wish_type = models.TextField()  # 희망 무용 종류
-    pay = models.BigIntegerField()  # 페이
-    deadline = models.CharField(max_length=50)  # 공고 마감일
-    playtime = models.CharField(max_length=50)  # 공연 날짜
-    content = models.TextField()  # 공연 소개서
+    concert_type = models.TextField()
+    wish_type = models.ManyToManyField(WishType, blank=True, related_name='posts')
+    pay = models.BigIntegerField()
+    deadline = models.CharField(max_length=50)
+    playtime = models.CharField(max_length=50)
+    content = models.TextField()
     image = models.ImageField(upload_to="post/%y%m%d")
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
@@ -29,7 +34,6 @@ class Post(models.Model):
     
     def get_favorited_users(self):
         return User.objects.filter(favorite__post=self)
-    
 
 
 @receiver(pre_save, sender=Post)

@@ -1,11 +1,9 @@
 from django.urls import path
-from .views import ResumeListCreateView, ResumeRetrieveUpdateDestroyView
+from .views import ResumeListView,GetMyResumeView,ResumeDetailView,ResumeCreateView
 
 urlpatterns = [
-    path("resumes/", ResumeListCreateView.as_view(), name="resume-list-create"),
-    path(
-        "resumes/<int:pk>/",
-        ResumeRetrieveUpdateDestroyView.as_view(),
-        name="resume-retrieve-update-destroy",
-    ),
+    path('resumeview/', ResumeListView.as_view()),
+    path('myresume/', GetMyResumeView.as_view()),
+    path('createresume/', ResumeCreateView.as_view()),
+    path('resume/<int:pk>/', ResumeDetailView.as_view()),
 ]

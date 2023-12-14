@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from .models import Post
+from .models import Post,WishType
 from .serializers import PostSerializer
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from django.http import JsonResponse
@@ -54,17 +54,15 @@ class PostCreateView(BaseUserView):
             title = lst.get("title")
             area = lst.get("area")
             concert_type = lst.get("concert_type")
-            wish_type = lst.get("wish_type")
+            wish_type_ids = lst.get("wish_type")
             pay = lst.get("pay")
             deadline = lst.get("deadline")
             playtime = lst.get("playtime")
             content = lst.get("content")
             image = lst.get("image")
 
-            print(lst)
-
             # 입력 유효성 검사
-            if not title or not author or not area or not concert_type or not wish_type or not pay or not deadline or not playtime or not content or not image:
+            if not title or not author or not area or not concert_type or not wish_type_ids or not pay or not deadline or not playtime or not content or not image:
                 return Response(
                     {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -75,13 +73,16 @@ class PostCreateView(BaseUserView):
                 title=title,
                 area=area,
                 concert_type=concert_type,
-                wish_type=wish_type,
                 pay=pay,
                 deadline=deadline,
                 playtime=playtime,
                 content=content,
                 image=image,
             )
+
+            for wish_type_id in wish_type_ids:
+                wish_type = WishType.objects.get(id=wish_type_id)
+                post.wish_type.add(wish_type)
 
             # 생성된 게시글 객체를 직렬화
             serializer = PostSerializer(post)
