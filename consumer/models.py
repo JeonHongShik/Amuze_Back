@@ -6,7 +6,7 @@ from django.conf import settings
 
 
 class Education(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    Education_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     education = models.TextField()
 
     def __str__(self):
@@ -14,7 +14,7 @@ class Education(models.Model):
     
 
 class Experience(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    Experience_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     experience = models.TextField()
     
     def __str__(self):
@@ -22,7 +22,7 @@ class Experience(models.Model):
     
 
 class Award(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    Award_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     award = models.TextField()
 
     def __str__(self):
@@ -30,7 +30,7 @@ class Award(models.Model):
     
 
 class Completion(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    Completion_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     completion = models.TextField()
 
     def __str__(self):
@@ -38,7 +38,7 @@ class Completion(models.Model):
     
 
 class Place(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    Place_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     place = models.TextField()
 
     def __str__(self):

@@ -4,12 +4,14 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from .models import Post,WishType
+from .models import Post,WishType,Image
 from .serializers import PostSerializer
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from django.http import JsonResponse
 from django.db import transaction
 from rest_framework import generics, permissions, status
+from django.core.files.base import ContentFile
+import base64
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -59,10 +61,10 @@ class PostCreateView(BaseUserView):
             deadline = lst.get("deadline")
             playtime = lst.get("playtime")
             content = lst.get("content")
-            image = lst.get("image")
+            images = request.FILES.getlist('images')
 
             # 입력 유효성 검사
-            if not title or not author or not area or not concert_type or not wish_type_ids or not pay or not deadline or not playtime or not content or not image:
+            if not title or not author or not area or not concert_type or not wish_type_ids or not pay or not deadline or not playtime or not content or not images:
                 return Response(
                     {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -77,9 +79,13 @@ class PostCreateView(BaseUserView):
                 deadline=deadline,
                 playtime=playtime,
                 content=content,
-                image=image,
             )
 
+            for img in images:
+                img_name = img.name
+                image = Image.objects.create(Images_author=post, images=img)
+                post.image.add(image)
+            
             for wish_type_id in wish_type_ids:
                 wish_type = WishType.objects.get(id=wish_type_id)
                 post.wish_type.add(wish_type)

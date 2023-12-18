@@ -8,10 +8,18 @@ from accounts.models import User
 
 
 class WishType(models.Model):
-    type = models.CharField(max_length=100)
+    type = models.TextField(default="type")
 
     def __str__(self):
         return f"{self.type}"
+
+class Image(models.Model):
+    images = models.ImageField(upload_to="post/%y%m%d")
+
+    def __str__(self):
+        return f"{self.images}"
+
+
 
 class Post(models.Model):
     author = models.ForeignKey(
@@ -25,7 +33,7 @@ class Post(models.Model):
     deadline = models.CharField(max_length=50)
     playtime = models.CharField(max_length=50)
     content = models.TextField()
-    image = models.ImageField(upload_to="post/%y%m%d")
+    image = models.ManyToManyField(Image, blank=True, related_name='posts', verbose_name='images')
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
 

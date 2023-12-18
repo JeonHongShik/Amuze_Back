@@ -28,3 +28,6 @@ pip freeze > requirements.txt 이거 한번 해주세요
 python manage.py runserver
 
 venv 는 .gitignore 에 설정해놔 깃헙에 안올라갑니다.
+
+마이그레이트했는데 테이블 생성 안될때
+python manage.py migrate --run-syncdb
