@@ -44,6 +44,8 @@ class Post(models.Model):
         return User.objects.filter(favorite__post=self)
 
 
+
+
 @receiver(pre_save, sender=Post)
 def delete_old_image(sender, instance, *args, **kwargs):
     if instance.pk:
@@ -52,25 +54,30 @@ def delete_old_image(sender, instance, *args, **kwargs):
         except Post.DoesNotExist:
             return
         else:
-            try:
-                old_path = old_instance.image.path
-            except ValueError:
-                return
-            else:
-                if os.path.isfile(old_path):
-                    if not instance.image:
-                        os.remove(old_path)
-                    elif instance.image and hasattr(instance.image, "url"):
-                        try:
-                            new_path = instance.image.path
-                        except ValueError:
+            old_images = old_instance.image.all()
+            new_images = instance.image.all()
+            for old_image in old_images:
+                try:
+                    old_path = old_image.images.path
+                except ValueError:
+                    return
+                else:
+                    if os.path.isfile(old_path):
+                        if not new_images:
                             os.remove(old_path)
                         else:
-                            if old_path != new_path:
-                                os.remove(old_path)
+                            for new_image in new_images:
+                                try:
+                                    new_path = new_image.images.path
+                                except ValueError:
+                                    os.remove(old_path)
+                                else:
+                                    if old_path != new_path:
+                                        os.remove(old_path)
+
 
 
 @receiver(post_delete, sender=Post)
 def delete_profile_image(sender, instance, **kwargs):
     if instance.image:
-        instance.image.delete(save=False)
+        instance.image.delete(save=False, many=True)
