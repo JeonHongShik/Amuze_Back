@@ -12,6 +12,14 @@ from django.db import transaction
 from rest_framework import generics, permissions, status
 from django.core.files.base import ContentFile
 import base64
+from django.db import transaction
+
+
+#API 테스트용
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -31,8 +39,13 @@ class GetMyPostView(BaseUserView):
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
 
 class PostListView(generics.ListAPIView):
-    queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+    def get_queryset(self):
+        try:
+            return Post.objects.all()
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PostDetailView(BaseUserView):
     def get_object(self,pk):
@@ -40,15 +53,21 @@ class PostDetailView(BaseUserView):
             return Post.objects.get(pk=pk)
         except Post.DoesNotExist:
             return None
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request, pk):
         post_user = self.get_object(pk)
         if not post_user:
             return JsonResponse({"error": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = PostSerializer(post_user)
-        return JsonResponse(serializer.data, safe=False)
+        try:
+            serializer = PostSerializer(post_user)
+            return JsonResponse(serializer.data, safe=False)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PostCreateView(BaseUserView):
+    @transaction.atomic
     def post(self, request):
         try:
             lst = request.data
@@ -71,7 +90,7 @@ class PostCreateView(BaseUserView):
 
             # 새로운 게시글 객체 생성
             post = Post.objects.create(
-                author=request.user.uid,
+                author=request.user,
                 title=title,
                 area=area,
                 concert_type=concert_type,
@@ -82,18 +101,65 @@ class PostCreateView(BaseUserView):
             )
 
             for img in images:
-                img_name = img.name
-                image = Image.objects.create(Images_author=post, images=img)
-                post.image.add(image)
-            
+                image = Image.objects.create(post=post, images=img)
+
             for wish_type_id in wish_type_ids:
                 wish_type = WishType.objects.get(id=wish_type_id)
-                post.wish_type.add(wish_type)
+                post.wish_types.add(wish_type)
 
             # 생성된 게시글 객체를 직렬화
             serializer = PostSerializer(post)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
+
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class PostUpdateView(BaseUserView, UpdateAPIView):
+    serializer_class = PostSerializer
+
+    def get_object(self, pk):
+        try:
+            return Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return None
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @transaction.atomic
+    def put(self, request, pk):
+        post = self.get_object(pk)
+        if not post:
+            return JsonResponse({"error": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            serializer = PostSerializer(post, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class PostDeleteView(BaseUserView):
+    def get_object(self, pk):
+        try:
+            return Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return None
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @transaction.atomic
+    def delete(self, request, pk):
+        post = self.get_object(pk)
+        if not post:
+            return JsonResponse({"error": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            post.delete()
+            return JsonResponse({"message": "Post deleted."}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -7,8 +7,9 @@ from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework import generics, permissions, status
-from .models import Award, Completion, Education, Experience, Place, Resume
+from .models import Award, Completion, Education, Career, Region, Resume
 from .serializers import ResumeSerializer
+from django.db import transaction
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -54,15 +55,17 @@ class ResumeCreateView(BaseUserView):
             gender = lst.get("gender")
             age = lst.get("age")
             education_data = lst.get("education")
-            experience_data = lst.get("experience")
+            Career_data = lst.get("Career")
             award_data = lst.get("award")
             completion_data = lst.get("completion")
             introduce = lst.get("introduce")
-            place_data = lst.get("place")
+            Region_data = lst.get("Region")
             image = lst.get("image")
 
+            print(lst)
+
             # 입력 유효성 검사
-            if not author or not phone or not gender or not age or not education_data or not experience_data or not award_data or not introduce or not place_data or not completion_data or not image:
+            if not author or not phone or not gender or not age or not education_data or not introduce or not Region_data:
                 return Response(
                     {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -73,30 +76,30 @@ class ResumeCreateView(BaseUserView):
                 phone=phone,
                 gender=gender,
                 age=age,
+                education_data=education_data,
+                Career_data=Career_data,
+                award_data=award_data,
+                completion_data=completion_data,
                 introduce=introduce,
+                Region_data=Region_data,
                 image=image
             )
 
-            # ManyToMany 필드에 데이터를 추가
+            # ForeignKey 필드에 데이터를 추가
             for education in education_data:
-                education_instance, created = Education.objects.get_or_create(education=education)
-                resume.education.add(education_instance)
+                Education.objects.create(education=education, resume=resume)
 
-            for experience in experience_data:
-                experience_instance, created = Experience.objects.get_or_create(experience=experience)
-                resume.experience.add(experience_instance)
+            for Career in Career_data:
+                Career.objects.create(Career=Career, resume=resume)
 
             for award in award_data:
-                award_instance, created = Award.objects.get_or_create(award=award)
-                resume.award.add(award_instance)
+                Award.objects.create(award=award, resume=resume)
 
             for completion in completion_data:
-                completion_instance, created = Completion.objects.get_or_create(completion=completion)
-                resume.completion.add(completion_instance)
+                Completion.objects.create(completion=completion, resume=resume)
 
-            for place in place_data:
-                place_instance, created = Place.objects.get_or_create(place=place)
-                resume.place.add(place_instance)
+            for Region in Region_data:
+                Region.objects.create(Region=Region, resume=resume)
 
             # 생성된 이력서 객체를 직렬화
             serializer = ResumeSerializer(resume)

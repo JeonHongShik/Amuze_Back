@@ -7,12 +7,8 @@ from .models import WishType,Image
 
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ["id", "title", "content","author",'display_wish_type']
+    list_display = ["id", "title", "content","author"]
 
-    def display_wish_type(self, obj):
-        return ', '.join([wish_type.type for wish_type in obj.wish_type.all()])
-
-    display_wish_type.short_description = 'Wish Types'
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(WishType)

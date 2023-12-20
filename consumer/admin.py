@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Resume, Education, Experience, Award, Completion, Place
+from .models import Resume, Education, Career, Award, Completion,Region
 
 
 class ResumeAdmin(admin.ModelAdmin):
@@ -11,8 +11,8 @@ class EducationAdmin(admin.ModelAdmin):
     list_display = ("id","education",)
 
 
-class ExperienceAdmin(admin.ModelAdmin):
-    list_display = ("id","experience",)
+class CareerAdmin(admin.ModelAdmin):
+    list_display = ("id","career",)
 
 
 class AwardAdmin(admin.ModelAdmin):
@@ -23,13 +23,13 @@ class CompletionAdmin(admin.ModelAdmin):
     list_display = ("id","completion",)
 
 
-class PlaceAdmin(admin.ModelAdmin):
-    list_display = ("id","place",)
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ("id","region",)
 
 
 admin.site.register(Resume, ResumeAdmin)
 admin.site.register(Education, EducationAdmin)
-admin.site.register(Experience, ExperienceAdmin)
+admin.site.register(Career, CareerAdmin)
 admin.site.register(Award, AwardAdmin)
 admin.site.register(Completion, CompletionAdmin)
-admin.site.register(Place, PlaceAdmin)
+admin.site.register(Region, RegionAdmin)

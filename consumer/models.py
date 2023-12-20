@@ -4,25 +4,24 @@ from django.db.models.signals import pre_save, post_delete
 import os
 from django.conf import settings
 
-
 class Education(models.Model):
-    Education_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    resume = models.ForeignKey('Resume', on_delete=models.CASCADE)
     education = models.TextField()
 
     def __str__(self):
         return f"{self.education}"
     
 
-class Experience(models.Model):
-    Experience_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    experience = models.TextField()
-    
+class Career(models.Model):
+    resume = models.ForeignKey('Resume', on_delete=models.CASCADE)
+    career = models.TextField()
+
     def __str__(self):
-        return f"{self.experience}"
+        return f"{self.career}"
     
 
 class Award(models.Model):
-    Award_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    resume = models.ForeignKey('Resume', on_delete=models.CASCADE)
     award = models.TextField()
 
     def __str__(self):
@@ -30,38 +29,34 @@ class Award(models.Model):
     
 
 class Completion(models.Model):
-    Completion_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    resume = models.ForeignKey('Resume', on_delete=models.CASCADE)
     completion = models.TextField()
 
     def __str__(self):
         return f"{self.completion}"
     
 
-class Place(models.Model):
-    Place_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    place = models.TextField()
+class Region(models.Model):
+    resume = models.ForeignKey('Resume', on_delete=models.CASCADE)
+    region = models.TextField()
 
     def __str__(self):
-        return f"{self.place}"
+        return f"{self.region}"
 
 
 class Resume(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name="resume")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="resume")
     phone = models.CharField(max_length=20) # 전화번호
     gender = models.CharField(max_length=8) # 성별
     age = models.IntegerField() # 나이
-    education = models.ManyToManyField(Education) # 학력 - 배열
-    experience = models.ManyToManyField(Experience) # 경력 내역 - 배열
-    award = models.ManyToManyField(Award) # 수상 내역 - 배열
-    completion = models.ManyToManyField(Completion) # 수료 - 배열
     introduce = models.TextField() # 자기소개
-    place = models.ManyToManyField(Place) # 장소 - 배열
     image = models.ImageField(upload_to="resumes/%y%m%d/", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.author)
+
 
 
 @receiver(pre_save, sender=Resume)
