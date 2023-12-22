@@ -25,7 +25,7 @@ from django.conf import settings
 schema_view = get_schema_view(
     openapi.Info(
         title="Amuze FireBase",
-        default_version="v2.0",
+        default_version="v2.5.1.3",
         description="FireBase Login Version 2.0",
     ),
     public=True,
