@@ -110,15 +110,14 @@ class PostCreateView(BaseUserView):
 
 class PostUpdateView(BaseUserView, UpdateAPIView):
     serializer_class = PostSerializer
-
     @transaction.atomic
-    def put(self, request, pk):
+    def patch(self, request, pk):
         post = self.get_object(pk)
         if not post:
             return JsonResponse({"error": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            serializer = PostSerializer(post, data=request.data)
+            serializer = PostSerializer(post, data=request.data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
