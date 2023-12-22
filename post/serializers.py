@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Image, WishType
+from .models import Post, Image, wishtype
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +8,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class WishTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = WishType
+        model = wishtype
         fields = "__all__"
 
 class PostSerializer(serializers.ModelSerializer):

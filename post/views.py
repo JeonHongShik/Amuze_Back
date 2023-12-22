@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from .models import Post,WishType,Image
+from .models import Post,wishtype,Image
 from .serializers import PostSerializer
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from django.http import JsonResponse
@@ -26,8 +26,12 @@ class BaseUserView(APIView):
     # permission_classes = [permissions.IsAuthenticated]
     def get_user(self, uid):
         return get_object_or_404(User, uid=uid)
-
-
+    
+    def get_object(self, pk):
+        try:
+            return Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return None
 
 class GetMyPostView(BaseUserView):
     def get(self, request):
@@ -42,20 +46,9 @@ class PostListView(generics.ListAPIView):
     serializer_class = PostSerializer
 
     def get_queryset(self):
-        try:
-            return Post.objects.all()
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Post.objects.all()
 
 class PostDetailView(BaseUserView):
-    def get_object(self,pk):
-        try:
-            return Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
-            return None
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     def get(self, request, pk):
         post_user = self.get_object(pk)
         if not post_user:
@@ -70,44 +63,44 @@ class PostCreateView(BaseUserView):
     @transaction.atomic
     def post(self, request):
         try:
-            lst = request.data
-            author = lst.get("author")
-            title = lst.get("title")
-            area = lst.get("area")
-            concert_type = lst.get("concert_type")
-            wish_type_ids = lst.get("wish_type")
-            pay = lst.get("pay")
-            deadline = lst.get("deadline")
-            playtime = lst.get("playtime")
-            content = lst.get("content")
-            images = request.FILES.getlist('images')
+            data = request.data
+            title = data.get("title")
+            region = data.get("region")
+            concert_type = data.get("concert_type")
+            wish_type_ids = data.get("wishtype")
+            pay = data.get("pay")
+            deadline = data.get("deadline")
+            datetime = data.get("datetime")
+            introduce  = data.get("introduce")
+            photos = request.FILES.getlist('photos')
 
-            # 입력 유효성 검사
-            if not title or not author or not area or not concert_type or not wish_type_ids or not pay or not deadline or not playtime or not content or not images:
+            print(data)
+
+            if not title or not region or not concert_type or not wish_type_ids or not pay or not deadline or not datetime or not introduce:
                 return Response(
                     {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # 새로운 게시글 객체 생성
             post = Post.objects.create(
                 author=request.user,
                 title=title,
-                area=area,
+                region=region,
                 concert_type=concert_type,
                 pay=pay,
+                wish_type_ids=wish_type_ids,
                 deadline=deadline,
-                playtime=playtime,
-                content=content,
+                datetime=datetime,
+                introduce=introduce,
+                photos=photos,
             )
 
-            for img in images:
-                image = Image.objects.create(post=post, images=img)
-
             for wish_type_id in wish_type_ids:
-                wish_type = WishType.objects.get(id=wish_type_id)
+                wish_type = wishtype.objects.get(id=wish_type_id)
                 post.wish_types.add(wish_type)
 
-            # 생성된 게시글 객체를 직렬화
+            for img in photos:
+                Image.objects.create(post=post, photos=img)
+
             serializer = PostSerializer(post)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -118,14 +111,6 @@ class PostCreateView(BaseUserView):
 class PostUpdateView(BaseUserView, UpdateAPIView):
     serializer_class = PostSerializer
 
-    def get_object(self, pk):
-        try:
-            return Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
-            return None
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     @transaction.atomic
     def put(self, request, pk):
         post = self.get_object(pk)
@@ -134,24 +119,15 @@ class PostUpdateView(BaseUserView, UpdateAPIView):
         
         try:
             serializer = PostSerializer(post, data=request.data)
-            if serializer.is_valid():
+            if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
-            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
 class PostDeleteView(BaseUserView):
-    def get_object(self, pk):
-        try:
-            return Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
-            return None
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     @transaction.atomic
     def delete(self, request, pk):
         post = self.get_object(pk)
@@ -160,6 +136,6 @@ class PostDeleteView(BaseUserView):
         
         try:
             post.delete()
-            return JsonResponse({"message": "Post deleted."}, status=status.HTTP_204_NO_CONTENT)
+            return JsonResponse({"message": "Post deleted."}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
