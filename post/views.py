@@ -107,7 +107,7 @@ class PostCreateView(BaseUserView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "서버 내부 오류가 발생하였습니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PostUpdateView(BaseUserView):
@@ -150,7 +150,7 @@ class PostUpdateView(BaseUserView):
             post.introduce = introduce
             post.wish_types.set(wish_types)
             post.save()
-
+    
             Image.objects.filter(id__in=delete_photos_ids).delete()
             for img in new_photos:
                 Image.objects.create(post=post, image=img)

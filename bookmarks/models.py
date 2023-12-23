@@ -6,6 +6,8 @@ from community.models import Board
 
 
 # Create your models here.
+
+#Post
 class Postbookmark(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
@@ -17,7 +19,7 @@ class Postbookmark(models.Model):
     def __str__(self):
         return f'{self.user.name}님이 즐겨찾기 추가한 {self.post.title}'
 
-
+#Resume
 class Resumebookmark(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
@@ -29,6 +31,8 @@ class Resumebookmark(models.Model):
     def __str__(self):
         return f'{self.user.name}님이 즐겨찾기 추가한 {self.resume.title}'
 
+
+#Board
 class Boardbookmark(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
