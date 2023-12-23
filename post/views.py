@@ -71,15 +71,21 @@ class PostCreateView(BaseUserView):
             pay = data.get("pay")
             deadline = data.get("deadline")
             datetime = data.get("datetime")
-            introduce  = data.get("introduce")
+            introduce = data.get("introduce")
             photos = request.FILES.getlist('photos')
-
-            print(data)
 
             if not title or not region or not concert_type or not wish_type_ids or not pay or not deadline or not datetime or not introduce:
                 return Response(
                     {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
                 )
+
+            wish_types = []
+            for wish_type_id in wish_type_ids:
+                try:
+                    wish_type = wishtype.objects.get(id=wish_type_id)
+                    wish_types.append(wish_type)
+                except wishtype.DoesNotExist:
+                    return Response({"detail": f"wishtype with id {wish_type_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
             post = Post.objects.create(
                 author=request.user,
@@ -87,19 +93,14 @@ class PostCreateView(BaseUserView):
                 region=region,
                 concert_type=concert_type,
                 pay=pay,
-                wish_type_ids=wish_type_ids,
                 deadline=deadline,
                 datetime=datetime,
-                introduce=introduce,
-                photos=photos,
+                introduce=introduce
             )
-
-            for wish_type_id in wish_type_ids:
-                wish_type = wishtype.objects.get(id=wish_type_id)
-                post.wish_types.add(wish_type)
+            post.wish_types.set(wish_types)
 
             for img in photos:
-                Image.objects.create(post=post, photos=img)
+                Image.objects.create(post=post, image=img)
 
             serializer = PostSerializer(post)
 
@@ -108,21 +109,61 @@ class PostCreateView(BaseUserView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-class PostUpdateView(BaseUserView, UpdateAPIView):
-    serializer_class = PostSerializer
+
+class PostUpdateView(BaseUserView):
     @transaction.atomic
     def patch(self, request, pk):
-        post = self.get_object(pk)
-        if not post:
-            return JsonResponse({"error": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
-        
         try:
-            serializer = PostSerializer(post, data=request.data, partial=True)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+            data = request.data
+            post = Post.objects.get(id=pk)
+            
+            title = data.get("title")
+            region = data.get("region")
+            concert_type = data.get("concert_type")
+            wish_type_ids = data.get("wishtype")
+            pay = data.get("pay")
+            deadline = data.get("deadline")
+            datetime = data.get("datetime")
+            introduce = data.get("introduce")
+            new_photos = request.FILES.getlist('new_photos')
+            delete_photos_ids = data.get("delete_photos_ids", [])
+
+            if not title or not region or not concert_type or not wish_type_ids or not pay or not deadline or not datetime or not introduce:
+                return Response(
+                    {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            wish_types = []
+            for wish_type_id in wish_type_ids:
+                try:
+                    wish_type = wishtype.objects.get(id=wish_type_id)
+                    wish_types.append(wish_type)
+                except wishtype.DoesNotExist:
+                    return Response({"detail": f"WishType with id {wish_type_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+            post.title = title
+            post.region = region
+            post.concert_type = concert_type
+            post.pay = pay
+            post.deadline = deadline
+            post.datetime = datetime
+            post.introduce = introduce
+            post.wish_types.set(wish_types)
+            post.save()
+
+            Image.objects.filter(id__in=delete_photos_ids).delete()
+            for img in new_photos:
+                Image.objects.create(post=post, image=img)
+
+            serializer = PostSerializer(post)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Post.DoesNotExist:
+            return Response({"detail": "Post does not exist"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
