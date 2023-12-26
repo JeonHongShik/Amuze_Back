@@ -95,12 +95,13 @@ class PostCreateView(BaseUserView):
                 pay=pay,
                 deadline=deadline,
                 datetime=datetime,
-                introduce=introduce
+                introduce=introduce,
             )
+
             post.wish_types.set(wish_types)
 
             for img in photos:
-                Image.objects.create(post=post, image=img)
+                Image.objects.create(post=post, photos=img)
 
             serializer = PostSerializer(post)
 
