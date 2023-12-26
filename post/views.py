@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from .models import Post,wishtype,Image
+from .models import Post,Image
 from .serializers import PostSerializer
 from django.http import JsonResponse
 from django.db import transaction
@@ -60,11 +60,10 @@ class PostCreateView(BaseUserView):
     def post(self, request):
         try:
             data = request.data
-            wish_type_ids = data.get("wishtype")
             photos = request.FILES.getlist('photos')
 
             # 필수 항목 검사
-            required_fields = ["title", "region", "type", "pay", "deadline", "datetime", "introduce"]
+            required_fields = ["title", "region", "type", "pay", "deadline", "datetime", "introduce","wishtype"]
             for field in required_fields:
                 if not data.get(field):
                     return Response(
@@ -72,23 +71,10 @@ class PostCreateView(BaseUserView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # WishType 검사
-            wish_types = []
-            for wish_type_id in wish_type_ids:
-                try:
-                    wish_type = wishtype.objects.get(id=wish_type_id)
-                    wish_types.append(wish_type)
-                except wishtype.DoesNotExist:
-                    return Response(
-                        {"detail": f"WishType ID {wish_type_id}가 존재하지 않습니다."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-
             post = Post.objects.create(
                 author=request.user,
                 **{field: data.get(field) for field in required_fields}
             )
-            post.wish_types.set(wish_types)
 
             images = [Image(post=post, image=img) for img in photos]
             Image.objects.bulk_create(images)
@@ -122,21 +108,13 @@ class PostUpdateView(BaseUserView):
             title = data.get("title")
             region = data.get("region")
             type = data.get("type")
-            wish_type_ids = data.get("wishtype")
+            wishtype = data.get("wishtype")
             pay = data.get("pay")
             deadline = data.get("deadline")
             datetime = data.get("datetime")
             introduce = data.get("introduce")
             new_photos = request.FILES.getlist('new_photos')
-            delete_photos_ids = data.get("delete_photos_ids", [])
 
-            wish_types = []
-            for wish_type_id in wish_type_ids:
-                try:
-                    wish_type = wishtype.objects.get(id=wish_type_id)
-                    wish_types.append(wish_type)
-                except wishtype.DoesNotExist:
-                    return Response({"detail": f"WishType ID {wish_type_id}가 존재하지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
             post.title = title
             post.region = region
@@ -145,10 +123,8 @@ class PostUpdateView(BaseUserView):
             post.deadline = deadline
             post.datetime = datetime
             post.introduce = introduce
-            post.wish_types.set(wish_types)
+            post.wishtype(wishtype)
             post.save()
-    
-            Image.objects.filter(id__in=delete_photos_ids).delete()
 
             images = [Image(post=post, image=img) for img in new_photos]
             Image.objects.bulk_create(images)

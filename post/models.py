@@ -2,18 +2,8 @@ from django.db import models
 from django.conf import settings
 import os
 from django.dispatch import receiver
-from django.db.models.signals import pre_save, post_delete
-from django.core.files import File
+from django.db.models.signals import pre_save
 from accounts.models import User
-from datetime import datetime
-
-class wishtype(models.Model):
-    wishtype = models.TextField(default="type")
-    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='wish_types')
-
-    def __str__(self):
-        return f"{self.wishtype}"
-
 
 class Image(models.Model):
     post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='images')
@@ -30,6 +20,7 @@ class Post(models.Model):
     region  = models.TextField()
     type = models.TextField(default="type")
     pay = models.TextField()
+    wishtype = models.TextField(default="type")
     deadline = models.CharField(max_length=50)
     datetime = models.CharField(max_length=50)
     introduce = models.TextField()

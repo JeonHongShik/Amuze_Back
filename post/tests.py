@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import Post,wish_types
+from .models import Post
 import django
 
 # Create your tests here.

@@ -1,35 +1,26 @@
 from rest_framework import serializers
-from .models import Post, Image, wishtype
+from .models import Post, Image
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = "__all__"
 
-class WishTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = wishtype
-        fields = "__all__"
 
 class PostSerializer(serializers.ModelSerializer):
     images = ImageSerializer(many=True)
-    wish_types = WishTypeSerializer(many=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'title', 'region', 'type', 'pay', 'deadline', 'datetime', 'introduce', 'wish_types', 'images']
+        fields = ['id', 'author', 'title', 'region', 'type', 'pay', 'deadline', 'datetime', 'introduce', 'wishtype', 'images']
 
     def create(self, validated_data):
         images_data = validated_data.pop('images')
-        wish_types_data = validated_data.pop('wish_types')
 
         post = Post.objects.create(**validated_data)
 
         for image_data in images_data:
             Image.objects.create(post=post, **image_data)
-
-        for wish_type_data in wish_types_data:
-            wishtype.objects.create(post=post, **wish_type_data)
 
         return post
 
@@ -42,6 +33,7 @@ class PostSerializer(serializers.ModelSerializer):
         instance.deadline = validated_data.get('deadline', instance.deadline)
         instance.datetime = validated_data.get('datetime', instance.datetime)
         instance.introduce = validated_data.get('introduce', instance.introduce)
+        instance.wishtype = validated_data.get('wishtype', instance.wishtype)
         instance.save()
 
         images = validated_data.get('images')
@@ -50,12 +42,5 @@ class PostSerializer(serializers.ModelSerializer):
             Image.objects.filter(post=instance).delete()
             for image_data in images:
                 Image.objects.create(post=instance, **image_data)
-
-        wish_types = validated_data.get('wish_types')
-
-        if wish_types:
-            wishtype.objects.filter(post=instance).delete()
-            for wish_type_data in wish_types:
-                wishtype.objects.create(post=instance, **wish_type_data)
 
         return instance
