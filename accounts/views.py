@@ -7,7 +7,9 @@ from django.db import transaction
 from .models import User
 from .serializers import UserSerializer
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
-
+import firebase_admin
+from firebase_admin import credentials, firestore
+from django.http import HttpResponse
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -16,41 +18,23 @@ class BaseUserView(APIView):
         return get_object_or_404(User, uid=uid)
 
 
-class accountsViews(BaseUserView):  # 계정 받아오기
+class accountsViews(APIView):  # 계정 받아오기
     @transaction.atomic
     def post(self, request):
         try:
-            lst = request.data
-            uid = lst.get("uid")
-            name = lst.get("name")
-            profile = lst.get("profile")
-            email = lst.get("email")
+            cred = credentials.Certificate('amuze.json')
+            firebase_admin.initialize_app(cred)
 
-            print(lst)
+            db = firestore.client()
 
-            # 입력 유효성 검사
-            if not uid or not name or not email:
-                return Response(
-                    {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
-                )
+            users_ref = db.collection(u'User')
+            docs = users_ref.stream()
 
-            # 이미 존재하는 사용자 체크 및 생성
-            user, created = User.objects.get_or_create(
-                uid=uid,
-                defaults={
-                    "name": name,
-                    "profile": profile,
-                    "email": email,
-                },
-            )
+            for doc in docs:
+                data = doc.to_dict()
+                User.objects.create(uid=data['uid'], name=data['name'], email=data['email'], profile=data['profile'])
 
-            if not created:
-                return Response(
-                    {"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST
-                )
-
-            serializer = UserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response('Sync completed', status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response(
