@@ -102,12 +102,18 @@ class PostUpdateView(BaseUserView):
         try:
             data = request.data
             post = Post.objects.get(id=pk)
-            
-            post_fields = ["title", "region", "type", "wishtype", "pay", "deadline", "datetime", "introduce","mainimage","otherimages1","otherimages2","otherimages3","otherimages4"]
+
+            post_fields = ["title", "region", "type", "wishtype", "pay", "deadline", "datetime", "introduce"]
             post_data = {field: data.get(field) for field in post_fields}
 
             for field, value in post_data.items():
                 setattr(post, field, value)
+
+            image_fields = ["mainimage", "otherimages1", "otherimages2", "otherimages3", "otherimages4"]
+            for image_field in image_fields:
+                image_file = request.FILES.get(image_field)
+                if image_file:
+                    setattr(post, image_field, image_file)
 
             post.save()
 
@@ -119,6 +125,7 @@ class PostUpdateView(BaseUserView):
             return Response({"detail": "게시물이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
