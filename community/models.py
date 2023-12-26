@@ -10,7 +10,7 @@ class Board(models.Model):
     registered_date = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="liked_boards"
-    )  # 사용자와의 관계 설정
+    )
 
     def __str__(self):
         return self.title
