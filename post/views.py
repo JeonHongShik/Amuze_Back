@@ -69,10 +69,15 @@ class PostCreateView(BaseUserView):
             post_fields = ["title", "region", "type", "pay", "deadline", "datetime", "introduce", "wishtype"]
             post_data = {field: data.get(field) for field in post_fields}
 
+
+            #나중에 지워야함!
             if request.user.is_authenticated:
                 author = request.user
             else:
                 author = None 
+                #나중에 지워야함!
+
+
 
             post = Post.objects.create(
                 author=author,
