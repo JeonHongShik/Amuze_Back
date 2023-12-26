@@ -14,4 +14,5 @@ class BoardAdmin(admin.ModelAdmin):
     ordering = ('-created_date',)
 
 
+admin.site.register(Board, BoardAdmin)
 admin.site.register(Comment, CommentAdmin)
