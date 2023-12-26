@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from .models import Post,Image
+from .models import Post
 from .serializers import PostSerializer
 from django.http import JsonResponse
 from django.db import transaction
@@ -60,24 +60,29 @@ class PostCreateView(BaseUserView):
     def post(self, request):
         try:
             data = request.data
-            photos = request.FILES.getlist('photos')
+            mainimage = request.FILES.get('mainimage')
+            otherimages1 = request.FILES.get('otherimages1')
+            otherimages2 = request.FILES.get('otherimages2')
+            otherimages3 = request.FILES.get('otherimages3')
+            otherimages4 = request.FILES.get('otherimages4')
 
-            # 필수 항목 검사
-            required_fields = ["title", "region", "type", "pay", "deadline", "datetime", "introduce","wishtype"]
-            for field in required_fields:
-                if not data.get(field):
-                    return Response(
-                        {"detail": f"{field}은(는) 필수 정보입니다."}, 
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+            post_fields = ["title", "region", "type", "pay", "deadline", "datetime", "introduce", "wishtype"]
+            post_data = {field: data.get(field) for field in post_fields}
+
+            if request.user.is_authenticated:
+                author = request.user
+            else:
+                author = None 
 
             post = Post.objects.create(
-                author=request.user,
-                **{field: data.get(field) for field in required_fields}
+                author=author,
+                mainimage=mainimage,
+                otherimages1=otherimages1,
+                otherimages2=otherimages2,
+                otherimages3=otherimages3,
+                otherimages4=otherimages4,
+                **post_data
             )
-
-            images = [Image(post=post, image=img) for img in photos]
-            Image.objects.bulk_create(images)
 
             serializer = PostSerializer(post)
 
@@ -98,36 +103,13 @@ class PostUpdateView(BaseUserView):
             data = request.data
             post = Post.objects.get(id=pk)
             
-            required_fields = ["title", "region", "type", "wishtype", "pay", "deadline", "datetime", "introduce"]
-            for field in required_fields:
-                if not data.get(field):
-                    return Response(
-                        {"detail": f"{field}은(는) 필수 정보입니다."}, status=status.HTTP_400_BAD_REQUEST
-                    )
+            post_fields = ["title", "region", "type", "wishtype", "pay", "deadline", "datetime", "introduce","mainimage","otherimages1","otherimages2","otherimages3","otherimages4"]
+            post_data = {field: data.get(field) for field in post_fields}
 
-            title = data.get("title")
-            region = data.get("region")
-            type = data.get("type")
-            wishtype = data.get("wishtype")
-            pay = data.get("pay")
-            deadline = data.get("deadline")
-            datetime = data.get("datetime")
-            introduce = data.get("introduce")
-            new_photos = request.FILES.getlist('new_photos')
+            for field, value in post_data.items():
+                setattr(post, field, value)
 
-
-            post.title = title
-            post.region = region
-            post.type = type
-            post.pay = pay
-            post.deadline = deadline
-            post.datetime = datetime
-            post.introduce = introduce
-            post.wishtype(wishtype)
             post.save()
-
-            images = [Image(post=post, image=img) for img in new_photos]
-            Image.objects.bulk_create(images)
 
             serializer = PostSerializer(post)
 
@@ -137,7 +119,6 @@ class PostUpdateView(BaseUserView):
             return Response({"detail": "게시물이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 

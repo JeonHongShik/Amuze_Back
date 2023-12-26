@@ -47,7 +47,7 @@ class Region(models.Model):
 
 class Image(models.Model):
     resume = models.ForeignKey(
-        "Resume", on_delete=models.CASCADE, related_name="photos"
+        "Resume", on_delete=models.CASCADE, related_name="photo"
     )
     photo = models.FileField(upload_to="image/%Y/%m/%d/")
 
