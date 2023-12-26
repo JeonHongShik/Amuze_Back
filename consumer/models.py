@@ -7,7 +7,7 @@ from django.conf import settings
 
 class Education(models.Model):
     resume = models.ForeignKey(
-        "Resume", on_delete=models.CASCADE, related_name="educations_resumes"
+        "Resume", on_delete=models.CASCADE, related_name="educations"
     )
     education = models.TextField()
 
@@ -17,7 +17,7 @@ class Education(models.Model):
 
 class Career(models.Model):
     resume = models.ForeignKey(
-        "Resume", on_delete=models.CASCADE, related_name="careers_resumes"
+        "Resume", on_delete=models.CASCADE, related_name="careers"
     )
     career = models.TextField()
 
@@ -27,7 +27,7 @@ class Career(models.Model):
 
 class Award(models.Model):
     resume = models.ForeignKey(
-        "Resume", on_delete=models.CASCADE, related_name="awards_resumes"
+        "Resume", on_delete=models.CASCADE, related_name="awards"
     )
     award = models.TextField()
 
@@ -37,7 +37,7 @@ class Award(models.Model):
 
 class Region(models.Model):
     resume = models.ForeignKey(
-        "Resume", on_delete=models.CASCADE, related_name="regions_resumes"
+        "Resume", on_delete=models.CASCADE, related_name="regions"
     )
     region = models.TextField()
 
@@ -46,6 +46,9 @@ class Region(models.Model):
 
 
 class Image(models.Model):
+    resume = models.ForeignKey(
+        "Resume", on_delete=models.CASCADE, related_name="photos"
+    )
     photo = models.FileField(upload_to="image/%Y/%m/%d/")
 
     def __str__(self):
@@ -54,43 +57,37 @@ class Image(models.Model):
 
 class Resume(models.Model):
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="resume"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="resumes"
     )
-    title = models.CharField(max_length=20)  # 제목
-    gender = models.CharField(max_length=8)  # 성별
-    age = models.CharField(max_length=8)  # 나이
-    regions = models.ManyToManyField(Region, related_name="resumes")  # 지역
-    educations = models.ManyToManyField(Education, related_name="resumes")  # 학력 및 전공
-    careers = models.ManyToManyField(Career, related_name="resumes")  # 경력
-    awards = models.ManyToManyField(Award, related_name="resumes")  # 수상 이력
-    introduce = models.TextField()  # 자기소개
-    photos = models.FileField(upload_to="image/%Y/%m/%d/", blank=True)
+    title = models.CharField(max_length=20) 
+    gender = models.CharField(max_length=8) 
+    age = models.CharField(max_length=8)  
+    introduce = models.TextField() 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.author)
 
-
-@receiver(pre_save, sender=Resume)
+@receiver(pre_save, sender=Image)
 def delete_old_image(sender, instance, *args, **kwargs):
     if instance.pk:
         try:
-            old_instance = Resume.objects.get(pk=instance.pk)
-        except Resume.DoesNotExist:
+            old_instance = Image.objects.get(pk=instance.pk)
+        except Image.DoesNotExist:
             return
         else:
             try:
-                old_path = old_instance.photos.path
+                old_path = old_instance.photo.path
             except ValueError:
                 return
             else:
                 if os.path.isfile(old_path):
-                    if not instance.photos:
+                    if not instance.photo:
                         os.remove(old_path)
-                    elif instance.photos and hasattr(instance.photos, "url"):
+                    elif instance.photo and hasattr(instance.photo, "url"):
                         try:
-                            new_path = instance.photos.path
+                            new_path = instance.photo.path
                         except ValueError:
                             os.remove(old_path)
                         else:
@@ -98,7 +95,7 @@ def delete_old_image(sender, instance, *args, **kwargs):
                                 os.remove(old_path)
 
 
-@receiver(post_delete, sender=Resume)
+@receiver(post_delete, sender=Image)
 def delete_profile_image(sender, instance, **kwargs):
-    if instance.photos:
-        instance.photos.delete(save=False)
+    if instance.photo:
+        instance.photo.delete(save=False)

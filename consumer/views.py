@@ -6,10 +6,10 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import generics, status
-from .models import Award, Education, Career, Region, Resume
+from .models import Award, Education, Career, Region, Resume,Image
 from .serializers import ResumeSerializer
 from rest_framework.exceptions import ValidationError
-
+from django.db import transaction
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -54,6 +54,7 @@ class ResumeDetailView(BaseUserView):
 
 
 class ResumeCreateView(BaseUserView):
+    @transaction.atomic
     def post(self, request):
         try:
             lst = request.data
@@ -90,20 +91,26 @@ class ResumeCreateView(BaseUserView):
                 awards_data=awards_data,
                 introduce=introduce,
                 regions_data=regions_data,
-                photos=photos,
             )
 
-            for educations in educations_data:
-                Education.objects.create(education=Education, resume=resume)
+            Education.objects.bulk_create(
+                [Education(education=education, resume=resume) for education in educations_data]
+            )
 
-            for careers in careers_data:
-                Career.objects.create(Career=Career, resume=resume)
+            Career.objects.bulk_create(
+                [Career(career=career, resume=resume) for career in careers_data]
+            )
 
-            for awards in awards_data:
-                Award.objects.create(award=Award, resume=resume)
+            Award.objects.bulk_create(
+                [Award(award=award, resume=resume) for award in awards_data]
+            )
 
-            for regions in regions_data:
-                Region.objects.create(Region=Region, resume=resume)
+            Region.objects.bulk_create(
+                [Region(region=region, resume=resume) for region in regions_data]
+            )
+
+            for photo in photos:
+                Image.objects.create(photo=photo, resume=resume)
 
             serializer = ResumeSerializer(resume)
 
@@ -118,6 +125,7 @@ class ResumeCreateView(BaseUserView):
 
 
 class ResumeUpdateView(BaseUserView):
+    @transaction.atomic
     def put(self, request, pk):
         try:
             resume = self.get_object(pk)

@@ -28,7 +28,7 @@ class Post(models.Model):
     )
     title = models.CharField(max_length=100)
     region  = models.TextField()
-    concert_type = models.TextField()
+    type = models.TextField(default="type")
     pay = models.TextField()
     deadline = models.CharField(max_length=50)
     datetime = models.CharField(max_length=50)
