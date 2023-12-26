@@ -7,7 +7,7 @@ class Board(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField(default="")
     writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    registered_date = models.DateTimeField(auto_now_add=True)
+    created_date = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="liked_boards"
     )
