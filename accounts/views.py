@@ -10,6 +10,10 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 import firebase_admin
 from firebase_admin import credentials, firestore
 from django.http import HttpResponse
+from firebase_admin import db
+
+cred = credentials.Certificate('amuze.json')
+firebase_admin.initialize_app(cred)
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -59,28 +63,47 @@ class accountsViews(BaseUserView):  # 계정 받아오기
             )
 
 
-# class accountsViews(APIView):  # 계정 받아오기
-#     @transaction.atomic
-#     def post(self, request):
-#         try:
-#             cred = credentials.Certificate('amuze.json')
-#             firebase_admin.initialize_app(cred)
+class syncdbfirebase(APIView):
+    def get(self, request):
+        # Firestore 클라이언트 인스턴스 생성
+        db = firestore.client()
 
-#             db = firestore.client()
+        # Firestore에서 데이터 가져오기
+        collection_ref = db.collection('users')
+        users = collection_ref.get()
 
-#             users_ref = db.collection(u'User')
-#             docs = users_ref.stream()
+        user_data = []  # 사용자 정보를 저장할 리스트
 
-#             for doc in docs:
-#                 data = doc.to_dict()
-#                 User.objects.create(uid=data['uid'], name=data['name'], email=data['email'], profile=data['profile'])
+        for user in users:
+            user_data.append({
+                'uid': user.id,
+                'displayName': user.get('displayName'),
+                'email': user.get('email'),
+                'photoURL': user.get('photoURL')
+            })
+        return Response(user_data)
 
-#             return Response('Sync completed', status=status.HTTP_201_CREATED)
 
-#         except Exception as e:
-#             return Response(
-#                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#             )
+    def post(self, request):
+        try:
+            cred = credentials.Certificate('amuze.json')
+            firebase_admin.initialize_app(cred)
+
+            db = firestore.client()
+
+            users_ref = db.collection(u'User')
+            docs = users_ref.stream()
+
+            for doc in docs:
+                data = doc.to_dict()
+                user = User.objects.create(uid=data['uid'], name=data['name'], email=data['email'], profile=data['profile'])
+                user.save()
+            return Response('Sync completed', status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class UserListView(BaseUserView):  # 유저 정보 보기

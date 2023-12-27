@@ -26,9 +26,9 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     uid = models.TextField(primary_key=True, unique=True, default="uid")
-    name = models.CharField(max_length=50, default="name")
+    displayName = models.CharField(max_length=50, default="name")
     email = models.EmailField(max_length=100, unique=True, default="Email")
-    profile = models.URLField(null=True, blank=True)
+    photoURL = models.URLField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
