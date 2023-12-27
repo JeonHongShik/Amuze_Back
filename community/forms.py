@@ -30,15 +30,3 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ("content",)
-
-
-class ReplyForm(forms.ModelForm):
-    content = forms.CharField(
-        error_messages={"required": "답글을 입력하세요"},
-        label="답글",
-        widget=forms.Textarea(attrs={"class": "form-control"}),
-    )
-
-    class Meta:
-        model = Reply
-        fields = ("content",)

@@ -14,7 +14,6 @@ class ResumeAdmin(admin.ModelAdmin):
         "careers_list",
         "awards_list",
         "introduce",
-        "photos",
         "created_at",
         "updated_at",
     )

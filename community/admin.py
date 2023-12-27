@@ -8,12 +8,11 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ("created_date", "writer")
 
 
-@admin.register(Board)
 class BoardAdmin(admin.ModelAdmin):
-    list_display = ("title", "writer", "registered_date", "like_count")
-    search_fields = ("title", "writer__username")
-    list_filter = ("registered_date", "writer")
-    ordering = ("-registered_date",)
+    list_display = ('title', 'content', 'writer', 'created_date', 'like_count')
+    list_filter = ('writer', 'created_date')
+    ordering = ('-created_date',)
 
 
+admin.site.register(Board, BoardAdmin)
 admin.site.register(Comment, CommentAdmin)

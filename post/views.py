@@ -1,18 +1,14 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from .models import Post,wishtype,Image
+from .models import Post
 from .serializers import PostSerializer
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from django.http import JsonResponse
 from django.db import transaction
-from rest_framework import generics, permissions, status
-from django.core.files.base import ContentFile
-import base64
-from django.db import transaction
+from rest_framework import generics,status
 
 
 #API 테스트용
@@ -64,50 +60,43 @@ class PostCreateView(BaseUserView):
     def post(self, request):
         try:
             data = request.data
-            title = data.get("title")
-            region = data.get("region")
-            concert_type = data.get("concert_type")
-            wish_type_ids = data.get("wishtype")
-            pay = data.get("pay")
-            deadline = data.get("deadline")
-            datetime = data.get("datetime")
-            introduce = data.get("introduce")
-            photos = request.FILES.getlist('photos')
+            mainimage = request.FILES.get('mainimage')
+            otherimages1 = request.FILES.get('otherimages1')
+            otherimages2 = request.FILES.get('otherimages2')
+            otherimages3 = request.FILES.get('otherimages3')
+            otherimages4 = request.FILES.get('otherimages4')
 
-            if not title or not region or not concert_type or not wish_type_ids or not pay or not deadline or not datetime or not introduce:
-                return Response(
-                    {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
-                )
+            post_fields = ["title", "region", "type", "pay", "deadline", "datetime", "introduce", "wishtype"]
+            post_data = {field: data.get(field) for field in post_fields}
 
-            wish_types = []
-            for wish_type_id in wish_type_ids:
-                try:
-                    wish_type = wishtype.objects.get(id=wish_type_id)
-                    wish_types.append(wish_type)
-                except wishtype.DoesNotExist:
-                    return Response({"detail": f"wishtype with id {wish_type_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+            #나중에 지워야함!
+            if request.user.is_authenticated:
+                author = request.user
+            else:
+                author = None 
+            #나중에 지워야함!
+
 
             post = Post.objects.create(
-                author=request.user,
-                title=title,
-                region=region,
-                concert_type=concert_type,
-                pay=pay,
-                deadline=deadline,
-                datetime=datetime,
-                introduce=introduce
+                author=author,
+                mainimage=mainimage,
+                otherimages1=otherimages1,
+                otherimages2=otherimages2,
+                otherimages3=otherimages3,
+                otherimages4=otherimages4,
+                **post_data
             )
-            post.wish_types.set(wish_types)
-
-            for img in photos:
-                Image.objects.create(post=post, image=img)
 
             serializer = PostSerializer(post)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            return Response({"detail": "서버 내부 오류가 발생하였습니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 
 class PostUpdateView(BaseUserView):
@@ -116,53 +105,30 @@ class PostUpdateView(BaseUserView):
         try:
             data = request.data
             post = Post.objects.get(id=pk)
-            
-            title = data.get("title")
-            region = data.get("region")
-            concert_type = data.get("concert_type")
-            wish_type_ids = data.get("wishtype")
-            pay = data.get("pay")
-            deadline = data.get("deadline")
-            datetime = data.get("datetime")
-            introduce = data.get("introduce")
-            new_photos = request.FILES.getlist('new_photos')
-            delete_photos_ids = data.get("delete_photos_ids", [])
 
-            if not title or not region or not concert_type or not wish_type_ids or not pay or not deadline or not datetime or not introduce:
-                return Response(
-                    {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
-                )
+            post_fields = ["title", "region", "type", "wishtype", "pay", "deadline", "datetime", "introduce"]
+            post_data = {field: data.get(field) for field in post_fields}
 
-            wish_types = []
-            for wish_type_id in wish_type_ids:
-                try:
-                    wish_type = wishtype.objects.get(id=wish_type_id)
-                    wish_types.append(wish_type)
-                except wishtype.DoesNotExist:
-                    return Response({"detail": f"WishType with id {wish_type_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+            for field, value in post_data.items():
+                setattr(post, field, value)
 
-            post.title = title
-            post.region = region
-            post.concert_type = concert_type
-            post.pay = pay
-            post.deadline = deadline
-            post.datetime = datetime
-            post.introduce = introduce
-            post.wish_types.set(wish_types)
+            image_fields = ["mainimage", "otherimages1", "otherimages2", "otherimages3", "otherimages4"]
+            for image_field in image_fields:
+                image_file = request.FILES.get(image_field)
+                if image_file:
+                    setattr(post, image_field, image_file)
+
             post.save()
-    
-            Image.objects.filter(id__in=delete_photos_ids).delete()
-            for img in new_photos:
-                Image.objects.create(post=post, image=img)
 
             serializer = PostSerializer(post)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Post.DoesNotExist:
-            return Response({"detail": "Post does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "게시물이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

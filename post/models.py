@@ -2,53 +2,51 @@ from django.db import models
 from django.conf import settings
 import os
 from django.dispatch import receiver
-from django.db.models.signals import pre_save, post_delete
-from django.core.files import File
+from django.db.models.signals import pre_save
 from accounts.models import User
-from datetime import datetime
-
-class wishtype(models.Model):
-    wishtype = models.TextField(default="type")
-    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='wish_types')
-
-    def __str__(self):
-        return f"{self.wishtype}"
-
-
-class Image(models.Model):
-    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='images')
-    photos = models.FileField(upload_to="post/%y%m%d", blank=True)
-
-    def __str__(self):
-        return f"{self.photos}" if self.photos else "No photo"
+from django.core.files.storage import default_storage as storage
 
 class Post(models.Model):
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="post"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="post",null=True
     )
-    title = models.CharField(max_length=100)
-    region  = models.TextField()
-    concert_type = models.TextField()
-    pay = models.TextField()
-    deadline = models.CharField(max_length=50)
-    datetime = models.CharField(max_length=50)
-    introduce = models.TextField()
+    title = models.CharField(max_length=100,null=True,blank=True)
+    region  = models.TextField(null=True,blank=True)
+    type = models.TextField(default="type",null=True,blank=True)
+    pay = models.TextField(null=True,blank=True)
+    wishtype = models.TextField(default="type",null=True,blank=True)
+    deadline = models.CharField(max_length=50,null=True,blank=True)
+    datetime = models.CharField(max_length=50,null=True,blank=True)
+    introduce = models.TextField(null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
+    mainimage = models.FileField(upload_to="image/%Y/%m/%d/",null=True,blank=True)
+    otherimages1 = models.FileField(upload_to="image/%Y/%m/%d/",null=True,blank=True)
+    otherimages2 = models.FileField(upload_to="image/%Y/%m/%d/",null=True,blank=True)
+    otherimages3 = models.FileField(upload_to="image/%Y/%m/%d/",null=True,blank=True)
+    otherimages4 = models.FileField(upload_to="image/%Y/%m/%d/",null=True,blank=True)
 
+
+        #이미지 이름 바꾸기 코드 짜기
+    
     def __str__(self):
         return f"{self.author}님이 작성한 {self.title} 입니다."
     
     def get_favorited_users(self):
         return User.objects.filter(favorite__post=self)
+    
+    def save(self, *args, **kwargs):
+        if self.pk:
+            original_post = Post.objects.get(pk=self.pk)
+            if original_post.mainimage.name != self.mainimage.name:
+                storage.delete(original_post.mainimage.name)
+            if original_post.otherimages1.name != self.otherimages1.name:
+                storage.delete(original_post.otherimages1.name)
+            if original_post.otherimages2.name != self.otherimages2.name:
+                storage.delete(original_post.otherimages2.name)
+            if original_post.otherimages3.name != self.otherimages3.name:
+                storage.delete(original_post.otherimages3.name)
+            if original_post.otherimages4.name != self.otherimages4.name:
+                storage.delete(original_post.otherimages4.name)
 
-
-@receiver(pre_save, sender=Image)
-def delete_old_image(sender, instance, **kwargs):
-    if instance.pk:
-        try:
-            old_image = Image.objects.get(pk=instance.pk)
-            if old_image.photos and old_image.photos != instance.photos:
-                old_image.photos.delete(save=False)
-        except Image.DoesNotExist:
-            return
+        super().save(*args, **kwargs)

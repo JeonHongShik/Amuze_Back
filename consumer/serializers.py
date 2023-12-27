@@ -36,35 +36,12 @@ class ResumeSerializer(serializers.ModelSerializer):
         model = Resume
         fields = [
             "author",
-            "phone",
             "gender",
             "age",
             "introduce",
-            "image",
+            "photo",
             "education",
             "career",
             "award",
             "region",
         ]
-
-    def create(self, validated_data):
-        education_data = validated_data.pop("education")
-        career_data = validated_data.pop("career")
-        award_data = validated_data.pop("award")
-        region_data = validated_data.pop("region")
-
-        resume = Resume.objects.create(**validated_data)
-
-        for education in education_data:
-            Education.objects.create(resume=resume, **education)
-
-        for career in career_data:
-            Career.objects.create(resume=resume, **career)
-
-        for award in award_data:
-            Award.objects.create(resume=resume, **award)
-
-        for region in region_data:
-            Region.objects.create(resume=resume, **region)
-
-        return resume
