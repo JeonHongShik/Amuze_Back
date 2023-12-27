@@ -51,8 +51,8 @@ class ResumeDetailView(BaseUserView):
             )
         serializer = ResumeSerializer(post_user)
         return JsonResponse(serializer.data, safe=False)
-
-
+        
+        
 class ResumeCreateView(BaseUserView):
     @transaction.atomic
     def post(self, request):
@@ -62,14 +62,13 @@ class ResumeCreateView(BaseUserView):
             title = lst.get("title")
             gender = lst.get("gender")
             age = lst.get("age")
+            introduce = lst.get("introduce")
             educations_data = lst.get("education")
             careers_data = lst.get("career")
             awards_data = lst.get("award")
-            introduce = lst.get("introduce")
             regions_data = lst.get("region")
-            photos = lst.get("image")
-
-            print(lst)
+            main_image = lst.get("mainimage")
+            other_images = lst.get("otherimages")
 
             if (
                 not author
@@ -82,15 +81,16 @@ class ResumeCreateView(BaseUserView):
                 raise ValidationError("필수 정보가 누락되었습니다")
 
             resume = Resume.objects.create(
-                author=request.user.uid,
+                author=request.user,
                 title=title,
                 gender=gender,
                 age=age,
-                educations_data=educations_data,
-                careers_data=careers_data,
-                awards_data=awards_data,
                 introduce=introduce,
-                regions_data=regions_data,
+                mainimage=main_image,
+                otherimages1=other_images[0] if len(other_images) > 0 else None,
+                otherimages2=other_images[1] if len(other_images) > 1 else None,
+                otherimages3=other_images[2] if len(other_images) > 2 else None,
+                otherimages4=other_images[3] if len(other_images) > 3 else None,
             )
 
             Education.objects.bulk_create(
@@ -109,9 +109,6 @@ class ResumeCreateView(BaseUserView):
                 [Region(region=region, resume=resume) for region in regions_data]
             )
 
-            for photo in photos:
-                Image.objects.create(photo=photo, resume=resume)
-
             serializer = ResumeSerializer(resume)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -124,9 +121,10 @@ class ResumeCreateView(BaseUserView):
             )
 
 
+
 class ResumeUpdateView(BaseUserView):
     @transaction.atomic
-    def put(self, request, pk):
+    def patch(self, request, pk):
         try:
             resume = self.get_object(pk)
             if not resume:
@@ -135,54 +133,43 @@ class ResumeUpdateView(BaseUserView):
                 )
 
             lst = request.data
-            author = lst.get("author")
-            title = lst.get("title")
-            gender = lst.get("gender")
-            age = lst.get("age")
-            educations_data = lst.get("education")
-            careers_data = lst.get("career")
-            awards_data = lst.get("award")
-            introduce = lst.get("introduce")
-            regions_data = lst.get("region")
-            photos = lst.get("image")
-
-            if (
-                not author
-                or not title
-                or not gender
-                or not age
-                or not introduce
-                or not regions_data
-            ):
-                raise ValidationError("필수 정보가 누락되었습니다.")
-
-            resume.author = author
-            resume.title = title
-            resume.gender = gender
-            resume.age = age
-            resume.introduce = introduce
-            resume.photos = photos
+            resume.author = lst.get("author", resume.author)
+            resume.title = lst.get("title", resume.title)
+            resume.gender = lst.get("gender", resume.gender)
+            resume.age = lst.get("age", resume.age)
+            resume.introduce = lst.get("introduce", resume.introduce)
+            resume.mainimage = lst.get("mainimage", resume.mainimage)
+            resume.otherimages1 = lst.get("otherimages1", resume.otherimages1)
+            resume.otherimages2 = lst.get("otherimages2", resume.otherimages2)
+            resume.otherimages3 = lst.get("otherimages3", resume.otherimages3)
+            resume.otherimages4 = lst.get("otherimages4", resume.otherimages4)
             resume.save()
+            
+            print(lst)
 
-            resume.educations.clear()
-            for education_data in educations_data:
-                education = Education.objects.create(education=education_data)
-                resume.educations.add(education)
+            if "educations" in lst:
+                resume.educations.clear()
+                for education_data in lst.get("educations"):
+                    education = Education.objects.create(education=education_data)
+                    resume.educations.add(education)
 
-            resume.careers.clear()
-            for career_data in careers_data:
-                career = Career.objects.create(career=career_data)
-                resume.careers.add(career)
+            if "careers" in lst:
+                resume.careers.clear()
+                for career_data in lst.get("careers"):
+                    career = Career.objects.create(career=career_data)
+                    resume.careers.add(career)
 
-            resume.awards.clear()
-            for award_data in awards_data:
-                award = Award.objects.create(award=award_data)
-                resume.awards.add(award)
+            if "awards" in lst:
+                resume.awards.clear()
+                for award_data in lst.get("awards"):
+                    award = Award.objects.create(award=award_data)
+                    resume.awards.add(award)
 
-            resume.regions.clear()
-            for region_data in regions_data:
-                region = Region.objects.create(region=region_data)
-                resume.regions.add(region)
+            if "regions" in lst:
+                resume.regions.clear()
+                for region_data in lst.get("regions"):
+                    region = Region.objects.create(region=region_data)
+                    resume.regions.add(region)
 
             serializer = ResumeSerializer(resume)
             return Response(serializer.data, status=status.HTTP_200_OK)

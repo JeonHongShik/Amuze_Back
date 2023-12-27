@@ -45,19 +45,6 @@ class Region(models.Model):
     def __str__(self):
         return f"{self.region}"
 
-
-"""
-class Image(models.Model):
-    resume = models.ForeignKey(
-        "Resume", on_delete=models.CASCADE, related_name="photo"
-    )
-    photo = models.FileField(upload_to="image/%Y/%m/%d/")
-
-    def __str__(self):
-        return str(self.photo)
-"""
-
-
 class Resume(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="resumes"
@@ -68,11 +55,11 @@ class Resume(models.Model):
     introduce = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    profile_image = models.FileField(upload_to="image/%Y/%m/%d/", null=True, blank=True)
-    image1 = models.FileField(upload_to="image/%Y/%m/%d/", null=True, blank=True)
-    image2 = models.FileField(upload_to="image/%Y/%m/%d/", null=True, blank=True)
-    image3 = models.FileField(upload_to="image/%Y/%m/%d/", null=True, blank=True)
-    image4 = models.FileField(upload_to="image/%Y/%m/%d/", null=True, blank=True)
+    mainimage = models.FileField(upload_to="image/resume/%Y/%m/%d/", null=True, blank=True)
+    otherimages1 = models.FileField(upload_to="image/resume/%Y/%m/%d/", null=True, blank=True)
+    otherimages2 = models.FileField(upload_to="image/resume/%Y/%m/%d/", null=True, blank=True)
+    otherimages3 = models.FileField(upload_to="image/resume/%Y/%m/%d/", null=True, blank=True)
+    otherimages4 = models.FileField(upload_to="image/resume/%Y/%m/%d/", null=True, blank=True)
 
     # 이미지 이름 바꾸기 코드 짜기
 
@@ -80,19 +67,24 @@ class Resume(models.Model):
         return str(self.author)
 
     def save(self, *args, **kwargs):
-        if self.pk:
-            original_resume = Resume.objects.get(pk=self.pk)
-            if original_resume.profile_image.name != self.profile_image.name:
-                storage.delete(original_resume.profile_image.name)
-            if original_resume.image1.name != self.image1.name:
-                storage.delete(original_resume.image1.name)
-            if original_resume.image2.name != self.image2.name:
-                storage.delete(original_resume.image2.name)
-            if original_resume.image3.name != self.image3.name:
-                storage.delete(original_resume.image3.name)
-            if original_resume.image4.name != self.image4.name:
-                storage.delete(original_resume.image4.name)
+    if self.pk:
+        original_resume = Resume.objects.get(pk=self.pk)
+        if original_resume.mainimage.name != self.mainimage.name:
+            storage.delete(original_resume.mainimage.name)
+        if original_resume.otherimages1.name !=
+        self.otherimages1.name:
+            storage.delete(original_resume.otherimages1.name)
+        if original_resume.otherimages2.name !=
+        self.otherimages2.name:
+            storage.delete(original_resume.otherimages2.name)
+        if original_resume.otherimages3.name !=
+        self.otherimages3.name:
+            storage.delete(original_resume.otherimages3.name)
+        if original_resume.otherimages4.name !=
+        self.otherimages4.name:
+            storage.delete(original_resume.otherimages4.name)
 
+    super().save(*args, **kwargs)
         super().save(*args, **kwargs)
 
 
