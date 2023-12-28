@@ -67,26 +67,20 @@ class Resume(models.Model):
         return str(self.author)
 
     def save(self, *args, **kwargs):
-    if self.pk:
-        original_resume = Resume.objects.get(pk=self.pk)
-        if original_resume.mainimage.name != self.mainimage.name:
-            storage.delete(original_resume.mainimage.name)
-        if original_resume.otherimages1.name !=
-        self.otherimages1.name:
-            storage.delete(original_resume.otherimages1.name)
-        if original_resume.otherimages2.name !=
-        self.otherimages2.name:
-            storage.delete(original_resume.otherimages2.name)
-        if original_resume.otherimages3.name !=
-        self.otherimages3.name:
-            storage.delete(original_resume.otherimages3.name)
-        if original_resume.otherimages4.name !=
-        self.otherimages4.name:
-            storage.delete(original_resume.otherimages4.name)
+        if self.pk:
+            original_resume = Resume.objects.get(pk=self.pk)
+            if original_resume.mainimage.name != self.mainimage.name:
+                storage.delete(original_resume.mainimage.name)
+            if original_resume.otherimages1.name !=self.otherimages1.name:
+                storage.delete(original_resume.otherimages1.name)
+            if original_resume.otherimages2.name !=self.otherimages2.name:
+                storage.delete(original_resume.otherimages2.name)
+            if original_resume.otherimages3.name !=self.otherimages3.name:
+                storage.delete(original_resume.otherimages3.name)
+            if original_resume.otherimages4.name !=self.otherimages4.name:
+                storage.delete(original_resume.otherimages4.name)
 
-    super().save(*args, **kwargs)
         super().save(*args, **kwargs)
-
 
 """
 @receiver(pre_save, sender=Image)

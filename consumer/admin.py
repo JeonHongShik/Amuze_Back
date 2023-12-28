@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Resume, Education, Career, Award, Region, Image
+from .models import Resume, Education, Career, Award, Region
 
 
 class ResumeAdmin(admin.ModelAdmin):
@@ -68,4 +68,3 @@ admin.site.register(Education, EducationAdmin)
 admin.site.register(Career, CareerAdmin)
 admin.site.register(Award, AwardAdmin)
 admin.site.register(Region, RegionAdmin)
-admin.site.register(Image, ImageAdmin)
