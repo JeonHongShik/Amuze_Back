@@ -40,6 +40,7 @@ class ResumeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resume
         fields = [
+            "id",
             "author",
             "gender",
             "age",
