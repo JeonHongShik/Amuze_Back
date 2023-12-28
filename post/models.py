@@ -20,16 +20,11 @@ class Post(models.Model):
     introduce = models.TextField(null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
-    mainimage = models.FileField(upload_to="image/post/%Y/%m/%d/",
-    null=True, blank=True)
-    otherimages1 = models.FileField(upload_to="image/post/%Y/%m/%d/",
-    null=True, blank=True)
-    otherimages2 = models.FileField(upload_to="image/post/%Y/%m/%d/",
-    null=True, blank=True)
-    otherimages3 = models.FileField(upload_to="image/post/%Y/%m/%d/",
-    null=True, blank=True)
-    otherimages4 = models.FileField(upload_to="image/post/%Y/%m/%d/",
-    null=True, blank=True)
+    mainimage = models.FileField(upload_to="image/post/%Y/%m/%d/",null=True, blank=True)
+    otherimages1 = models.FileField(upload_to="image/post/%Y/%m/%d/",null=True, blank=True)
+    otherimages2 = models.FileField(upload_to="image/post/%Y/%m/%d/",null=True, blank=True)
+    otherimages3 = models.FileField(upload_to="image/post/%Y/%m/%d/",null=True, blank=True)
+    otherimages4 = models.FileField(upload_to="image/post/%Y/%m/%d/",null=True, blank=True)
 
 
         #이미지 이름 바꾸기 코드 짜기

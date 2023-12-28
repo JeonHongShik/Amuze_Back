@@ -41,6 +41,7 @@ class ResumeSerializer(serializers.ModelSerializer):
         model = Resume
         fields = [
             "id",
+            "title",
             "author",
             "gender",
             "age",

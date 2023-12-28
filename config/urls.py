@@ -38,7 +38,7 @@ urlpatterns = [
     path("posts/", include("post.urls")),
     path("bookmarks/", include("bookmarks.urls")),
     path("resumes/", include("consumer.urls")),
-    path("community/", include("community.urls")),
+    path("communities/", include("community.urls")),
     re_path(
         r"^swagger(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),

@@ -5,6 +5,7 @@ from .models import Resume, Education, Career, Award, Region
 class ResumeAdmin(admin.ModelAdmin):
     list_per_page = 10
     list_display = (
+        "id",
         "author",
         "title",
         "gender",

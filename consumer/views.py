@@ -10,6 +10,7 @@ from .models import Award, Education, Career, Region, Resume
 from .serializers import ResumeSerializer
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
+import json
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -113,41 +114,41 @@ class ResumeCreateView(BaseUserView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
-
-
-
-class ResumeUpdateView(BaseUserView):
+class ResumeUpdateView(APIView):
     @transaction.atomic
     def patch(self, request, pk):
         try:
             data = request.data
-            resume = Resume.objects.get(id=pk)
+            resume = get_object_or_404(Resume, pk=pk)
 
             resume_fields = ["author", "title", "gender", "age", "introduce"]
-            resume_data = {field: data.get(field) for field in resume_fields}
+            for field in resume_fields:
+                if field in data:
+                    setattr(resume, field, data[field])
 
-            for field, value in resume_data.items():
-                setattr(resume, field, value)
-
-            resume.mainimage = request.FILES.get("mainimage", resume.mainimage)
-            resume.otherimages1 = request.FILES.get("otherimages1", resume.otherimages1)
-            resume.otherimages2 = request.FILES.get("otherimages2", resume.otherimages2)
-            resume.otherimages3 = request.FILES.get("otherimages3", resume.otherimages3)
-            resume.otherimages4 = request.FILES.get("otherimages4", resume.otherimages4)
+            # 업로드된 파일 처리
+            for image_field in ["mainimage", "otherimages1", "otherimages2", "otherimages3", "otherimages4"]:
+                if image_field in request.FILES:
+                    setattr(resume, image_field, request.FILES.get(image_field))
 
             resume.save()
 
-            related_fields = ["educations", "careers", "awards", "regions"]
-            for related_field in related_fields:
+            related_models = {
+                "educations": Education,
+                "careers": Career,
+                "awards": Award,
+                "regions": Region
+            }
+
+            for related_field, RelatedModel in related_models.items():
                 if related_field in data:
-                    getattr(resume, related_field).clear()
-                    for related_data in data.get(related_field):
-                        related_object = globals()[related_field.capitalize()].objects.create(data=related_data)
-                        getattr(resume, related_field).add(related_object)
+                    # 기존 연결된 객체 삭제
+                    getattr(resume, related_field).all().delete()
+                    # 새로운 객체 생성 및 연결
+                    for item in data[related_field]:
+                        RelatedModel.objects.create(resume=resume, **item)
 
             serializer = ResumeSerializer(resume)
-
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Resume.DoesNotExist:
@@ -156,7 +157,9 @@ class ResumeUpdateView(BaseUserView):
             return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
 class ResumeDeleteView(BaseUserView):
+    @transaction.atomic
     def delete(self, request, pk):
         try:
             resume = self.get_object(pk)
