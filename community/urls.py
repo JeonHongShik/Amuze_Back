@@ -7,7 +7,7 @@ urlpatterns = [
     #community
     path("community/", CommunitylistView.as_view()),
     path("community/My", MyCommunityView.as_view()),
-    path("community/detail<int:pk>", CommunityDetailView.as_view()),
+    path("community/detail/<int:pk>", CommunityDetailView.as_view()),
     path("community/create/", CreatecommunityView.as_view()),
     path("community/update/<int:pk>/",UpdatecommunityView.as_view()),
     path("community/delete/<int:pk>",CommunityDeleteView.as_view()),
