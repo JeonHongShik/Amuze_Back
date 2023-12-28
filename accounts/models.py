@@ -10,25 +10,31 @@ import os
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, uid, name, email, password=None):
-        user = self.model(uid=uid, name=name, email=email)
+    def create_user(self, uid, displayName, email, password=None):
+        user = self.model(uid=uid, displayName=displayName, email=email)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, uid, name, email, password):
-        user = self.create_user(uid=uid, name=name, email=email, password=password)
+    def create_superuser(self, uid, displayName, email, password):
+        user = self.create_user(uid=uid, displayName=displayName, email=email, password=password)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
         return user
 
+    def update_user(self, uid, **user_data):
+        user = self.model.objects.get(uid=uid)
+        for key, value in user_data.items():
+            setattr(user, key, value)
+        user.save(using=self._db)
+        return user
 
 class User(AbstractBaseUser, PermissionsMixin):
     uid = models.TextField(primary_key=True, unique=True, default="uid")
-    name = models.CharField(max_length=50, default="name")
+    displayName = models.CharField(max_length=50, default="name")
     email = models.EmailField(max_length=100, unique=True, default="Email")
-    profile = models.URLField(null=True, blank=True)
+    photoURL = models.URLField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -37,10 +43,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "uid"
-    REQUIRED_FIELDS = ["name", "email"]
+    REQUIRED_FIELDS = ["displayName", "email"]
 
     def __str__(self) -> str:
-        return self.name
+        return self.displayName
 
     def get_favorites(self):
         return self.favorite_set.all()
