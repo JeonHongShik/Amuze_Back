@@ -8,12 +8,14 @@ from .models import User
 from .serializers import UserSerializer
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore ,auth
 from django.http import HttpResponse
 from firebase_admin import db
 
+# Firebase 앱 초기화
 cred = credentials.Certificate('amuze.json')
 firebase_admin.initialize_app(cred)
+
 
 class BaseUserView(APIView):
     permission_classes = [AllowAny]
@@ -21,69 +23,28 @@ class BaseUserView(APIView):
     def get_user(self, uid):
         return get_object_or_404(User, uid=uid)
     
-class accountsViews(BaseUserView):  # 계정 받아오기
-    @transaction.atomic
-    def post(self, request):
-        try:
-            lst = request.data
-            uid = lst.get("uid")
-            name = lst.get("name")
-            profile = lst.get("profile")
-            email = lst.get("email")
-
-            print(lst)
-
-            # 입력 유효성 검사
-            if not uid or not name or not email:
-                return Response(
-                    {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # 이미 존재하는 사용자 체크 및 생성
-            user, created = User.objects.get_or_create(
-                uid=uid,
-                defaults={
-                    "name": name,
-                    "profile": profile,
-                    "email": email,
-                },
-            )
-
-            if not created:
-                return Response(
-                    {"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST
-                )
-
-            serializer = UserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        except Exception as e:
-            return Response(
-                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-class syncdbfirebase(APIView):
+class signupfirebaseview(BaseUserView):
     def get(self, request):
         # Firestore 클라이언트 인스턴스 생성
         db = firestore.client()
 
         # Firestore에서 데이터 가져오기
-        collection_ref = db.collection('users')
-        users = collection_ref.get()
-
-        user_data = []  # 사용자 정보를 저장할 리스트
+        users = db.collection('users').get()
 
         for user in users:
-            user_data.append({
-                'uid': user.id,
-                'displayName': user.get('displayName'),
-                'email': user.get('email'),
-                'photoURL': user.get('photoURL')
-            })
-        return Response(user_data)
+            # Django 모델에서 사용자 확인
+            if not User.objects.filter(uid=user.id).exists():
+                # Django 모델 생성 및 저장
+                User.objects.create(
+                    uid=user.id,
+                    displayName=user.to_dict().get('displayName'),
+                    email=user.to_dict().get('email'),
+                    photoURL=user.to_dict().get('photoURL', "")
+                )
 
+        return HttpResponse("FireBase에 새로 등록된 유저 등록완료")
 
+class syncdbfirebase(APIView):
     def post(self, request):
         try:
             cred = credentials.Certificate('amuze.json')
@@ -229,3 +190,45 @@ class DeleteUserView(BaseUserView):  # 유저 삭제
 #             kakao_user = self._create_kakao_user(kakao_response)
 #             kakao_user.save()  # 저장
 #         return JsonResponse({"id": kakao_user.kakaoid, "exist": False}, status=201)
+
+
+# class localsignupview(BaseUserView):
+#     @transaction.atomic
+#     def post(self, request):
+#         try:
+#             lst = request.data
+#             uid = lst.get("uid")
+#             name = lst.get("name")
+#             profile = lst.get("profile")
+#             email = lst.get("email")
+
+#             print(lst)
+
+#             # 입력 유효성 검사
+#             if not uid or not name or not email:
+#                 return Response(
+#                     {"detail": "필수 정보가 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             # 이미 존재하는 사용자 체크 및 생성
+#             user, created = User.objects.get_or_create(
+#                 uid=uid,
+#                 defaults={
+#                     "name": name,
+#                     "profile": profile,
+#                     "email": email,
+#                 },
+#             )
+
+#             if not created:
+#                 return Response(
+#                     {"detail": "이미 가입된 사용자입니다."}, status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             serializer = UserSerializer(user)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+#         except Exception as e:
+#             return Response(
+#                 {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
