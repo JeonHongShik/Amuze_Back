@@ -3,34 +3,39 @@ from .models import Resume, Education, Career, Award, Region
 
 
 class EducationSerializer(serializers.ModelSerializer):
+    education = serializers.ListField(child=serializers.CharField())
+
     class Meta:
         model = Education
-        fields = "__all__"
-
+        fields = ["id", "education", "resume"]
 
 class CareerSerializer(serializers.ModelSerializer):
+    career = serializers.ListField(child=serializers.CharField())
+
     class Meta:
         model = Career
-        fields = "__all__"
-
+        fields = ["id", "career", "resume"]
 
 class AwardSerializer(serializers.ModelSerializer):
+    award = serializers.ListField(child=serializers.CharField())
+
     class Meta:
         model = Award
-        fields = "__all__"
-
+        fields = ["id", "award", "resume"]
 
 class RegionSerializer(serializers.ModelSerializer):
+    region = serializers.ListField(child=serializers.CharField())
+
     class Meta:
         model = Region
-        fields = "__all__"
+        fields = ["id", "region", "resume"]
 
 
 class ResumeSerializer(serializers.ModelSerializer):
-    education = EducationSerializer(many=True)
-    career = CareerSerializer(many=True)
-    award = AwardSerializer(many=True)
-    region = RegionSerializer(many=True)
+    educations = EducationSerializer(many=True)
+    careers = CareerSerializer(many=True)
+    awards = AwardSerializer(many=True)
+    regions = RegionSerializer(many=True)
 
     class Meta:
         model = Resume
@@ -39,9 +44,8 @@ class ResumeSerializer(serializers.ModelSerializer):
             "gender",
             "age",
             "introduce",
-            "photo",
-            "education",
-            "career",
-            "award",
-            "region",
+            "educations",
+            "careers",
+            "awards",
+            "regions",
         ]
