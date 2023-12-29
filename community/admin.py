@@ -3,11 +3,11 @@ from .models import Board, Comment
 
 
 class BoardAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "content","writer")
+    list_display = ("id", "title", "content","author")
 
 
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ("id", "board", "writer","content")
+    list_display = ("id", "board", "author","content")
 
 
 admin.site.register(Board, BoardAdmin)

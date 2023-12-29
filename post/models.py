@@ -38,15 +38,15 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if self.pk:
             original_post = Post.objects.get(pk=self.pk)
-            if original_post.mainimage.name != self.mainimage.name:
+            if original_post.mainimage and original_post.mainimage.name != self.mainimage.name:
                 storage.delete(original_post.mainimage.name)
-            if original_post.otherimages1.name != self.otherimages1.name:
+            if original_post.otherimages1 and original_post.otherimages1.name != self.otherimages1.name:
                 storage.delete(original_post.otherimages1.name)
-            if original_post.otherimages2.name != self.otherimages2.name:
+            if original_post.otherimages2 and original_post.otherimages2.name != self.otherimages2.name:
                 storage.delete(original_post.otherimages2.name)
-            if original_post.otherimages3.name != self.otherimages3.name:
+            if original_post.otherimages3 and original_post.otherimages3.name != self.otherimages3.name:
                 storage.delete(original_post.otherimages3.name)
-            if original_post.otherimages4.name != self.otherimages4.name:
+            if original_post.otherimages4 and original_post.otherimages4.name != self.otherimages4.name:
                 storage.delete(original_post.otherimages4.name)
 
         super().save(*args, **kwargs)

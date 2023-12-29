@@ -6,15 +6,15 @@ from .views import (
     DeleteUserView,
     UserDetailView,
     syncdbfirebase,
-    signupfirebaseview,
+    SignupFirebaseView,
 )
 
 urlpatterns = [
     # path("CreateUser/", localsignupview.as_view()),
-    path("SignUp/", signupfirebaseview.as_view()),
+    path("SignUp/", SignupFirebaseView.as_view()),
     path("syncdb/", syncdbfirebase.as_view()),
     path("Users/", UserListView.as_view()),
-    path("User/detail/<int:pk>/", UserDetailView.as_view()),
-    path("User/patch/<int:pk>/", UpdateUserView.as_view()),
-    path("User/delete/<int:pk>/", DeleteUserView.as_view()),
+    path("User/detail/<str:uid>/", UserDetailView.as_view()),
+    path("User/patch/<str:uid>/", UpdateUserView.as_view()),
+    path("User/delete/<str:uid>/", DeleteUserView.as_view()),
 ]

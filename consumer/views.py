@@ -2,7 +2,6 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import generics, status
@@ -11,11 +10,12 @@ from .serializers import ResumeSerializer
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
 import json
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+
+User = get_user_model()
 
 class BaseUserView(APIView):
-    permission_classes = [AllowAny]
-
-    # permission_classes = [permissions.IsAuthenticated]
     def get_user(self, uid):
         return get_object_or_404(User, uid=uid)
 
@@ -26,14 +26,9 @@ class ResumeListView(generics.ListAPIView):
 
 
 class GetMyResumeView(BaseUserView):
-    def get(self, request):
-        try:
-            posts = Resume.objects.filter(author=request.user.uid)
-        except Resume.DoesNotExist:
-            return JsonResponse(
-                {"error": "정보를 찾을 수 없습니다"}, status=status.HTTP_404_NOT_FOUND
-            )
-        serializer = ResumeSerializer(posts, many=True)
+    def get(self, request, uid):
+        resumes = Resume.objects.filter(author=uid)
+        serializer = ResumeSerializer(resumes, many=True)
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
 
 
@@ -45,12 +40,12 @@ class ResumeDetailView(BaseUserView):
             return None
 
     def get(self, request, pk):
-        post_user = self.get_object(pk)
-        if not post_user:
+        resume_user = self.get_object(pk)
+        if not resume_user:
             return JsonResponse(
                 {"error": "정보를 찾을 수 없습니다"}, status=status.HTTP_404_NOT_FOUND
             )
-        serializer = ResumeSerializer(post_user)
+        serializer = ResumeSerializer(resume_user)
         return JsonResponse(serializer.data, safe=False)
         
         
@@ -60,7 +55,7 @@ class ResumeCreateView(BaseUserView):
         try:
             data = request.data
             mainimage = request.FILES.get('mainimage')
-            otherimages1 = request.FILES.get('otherimages')
+            otherimages1 = request.FILES.get('otherimages1')
             otherimages2 = request.FILES.get('otherimages2')
             otherimages3 = request.FILES.get('otherimages3')
             otherimages4 = request.FILES.get('otherimages4')
@@ -68,13 +63,23 @@ class ResumeCreateView(BaseUserView):
             resume_fields = ["title", "gender", "age", "introduce"]
             resume_data = {field: data.get(field) for field in resume_fields}
 
-            if request.user.is_authenticated:
-                author = request.user
+            uid = data.get('uid')
+            if uid is not None:
+                try:
+                    user = User.objects.get(uid=uid)
+                except ObjectDoesNotExist:
+                    return Response(
+                        {"detail": "해당 uid를 가진 사용자가 존재하지 않습니다."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             else:
-                author = None 
+                return Response(
+                    {"detail": "'uid' 값이 요청 데이터에 포함되어 있지 않습니다."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             resume = Resume.objects.create(
-                author=author,
+                author=user,
                 mainimage=mainimage,
                 otherimages1=otherimages1,
                 otherimages2=otherimages2,
@@ -82,11 +87,11 @@ class ResumeCreateView(BaseUserView):
                 otherimages4=otherimages4,
                 **resume_data
             )
-
             educations_data = data.get("education").split(',')
-            careers_data = data.get("career").split(',')
-            awards_data = data.get("award").split(',')
-            regions_data = data.get("region").split(',')
+            careers_data = [data.get("career")] if ',' not in data.get("career") else data.get("career").split(',')
+            awards_data = [data.get("award")] if ',' not in data.get("award") else data.get("award").split(',')
+            regions_data = [data.get("region")] if ',' not in data.get("region") else data.get("region").split(',')
+
 
             Education.objects.bulk_create(
                 [Education(education=education.strip(), resume=resume) for education in educations_data]
@@ -114,22 +119,27 @@ class ResumeCreateView(BaseUserView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-class ResumeUpdateView(APIView):
+
+class ResumeUpdateView(BaseUserView):
     @transaction.atomic
     def patch(self, request, pk):
+        uid = request.data.get('uid') 
         try:
+
+            resume = Resume.objects.get(id=pk, author__uid=uid)
+
             data = request.data
-            resume = get_object_or_404(Resume, pk=pk)
+            resume_fields = ["title", "gender", "age", "introduce"]
+            resume_data = {field: data.get(field) for field in resume_fields}
 
-            resume_fields = ["author", "title", "gender", "age", "introduce"]
-            for field in resume_fields:
-                if field in data:
-                    setattr(resume, field, data[field])
+            for field, value in resume_data.items():
+                setattr(resume, field, value)
 
-            # 업로드된 파일 처리
-            for image_field in ["mainimage", "otherimages1", "otherimages2", "otherimages3", "otherimages4"]:
-                if image_field in request.FILES:
-                    setattr(resume, image_field, request.FILES.get(image_field))
+            resume.mainimage = request.FILES.get("mainimage", resume.mainimage)
+            resume.otherimages1 = request.FILES.get("otherimages1", resume.otherimages1)
+            resume.otherimages2 = request.FILES.get("otherimages2", resume.otherimages2)
+            resume.otherimages3 = request.FILES.get("otherimages3", resume.otherimages3)
+            resume.otherimages4 = request.FILES.get("otherimages4", resume.otherimages4)
 
             resume.save()
 
@@ -145,33 +155,33 @@ class ResumeUpdateView(APIView):
                     # 기존 연결된 객체 삭제
                     getattr(resume, related_field).all().delete()
                     # 새로운 객체 생성 및 연결
-                    for item in data[related_field]:
-                        RelatedModel.objects.create(resume=resume, **item)
+                    items_data = data.get(related_field).split(',')
+                    RelatedModel.objects.bulk_create(
+                        [RelatedModel(resume=resume, **{related_field[:-1]: item.strip()}) for item in items_data]
+                    )
 
             serializer = ResumeSerializer(resume)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Resume.DoesNotExist:
-            return Response({"detail": "이력서가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "이력서가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 
 class ResumeDeleteView(BaseUserView):
     @transaction.atomic
     def delete(self, request, pk):
+        uid = request.data.get('uid')
         try:
-            resume = self.get_object(pk)
-            if not resume:
-                return JsonResponse(
-                    {"error": "Resume not found."}, status=status.HTTP_404_NOT_FOUND
-                )
+            resume = Resume.objects.get(id=pk, author__uid=uid)
 
             resume.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return JsonResponse({"message": "이력서가 삭제되었습니다."}, status=status.HTTP_200_OK)
 
+        except Resume.DoesNotExist:
+            return JsonResponse({"error": "이력서가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response(
-                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

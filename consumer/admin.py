@@ -19,12 +19,13 @@ class ResumeAdmin(admin.ModelAdmin):
         "updated_at",
     )
 
+
     def regions_list(self, obj):
         return ", ".join([str(region) for region in obj.regions.all()])
 
     def educations_list(self, obj):
         return ", ".join([str(education) for education in obj.educations.all()])
-
+    
     def careers_list(self, obj):
         return ", ".join([str(career) for career in obj.careers.all()])
 

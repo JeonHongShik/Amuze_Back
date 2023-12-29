@@ -1,48 +1,62 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from .models import User
 from .serializers import UserSerializer
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, DestroyAPIView
 import firebase_admin
 from firebase_admin import credentials, firestore ,auth
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from firebase_admin import db
+from django.contrib.auth import get_user_model
 
-# Firebase 앱 초기화
 cred = credentials.Certificate('amuze.json')
 firebase_admin.initialize_app(cred)
 
+User = get_user_model()
 
 class BaseUserView(APIView):
-    permission_classes = [AllowAny]
 
     def get_user(self, uid):
         return get_object_or_404(User, uid=uid)
     
-class signupfirebaseview(BaseUserView):
+class SignupFirebaseView(BaseUserView):
     def get(self, request):
-        # Firestore 클라이언트 인스턴스 생성
         db = firestore.client()
 
-        # Firestore에서 데이터 가져오기
-        users = db.collection('users').get()
+        firebase_users = db.collection('users').get()
+        firebase_user_ids = [user.id for user in firebase_users]
 
-        for user in users:
-            # Django 모델에서 사용자 확인
+        django_users = User.objects.all()
+
+        for user in django_users:
+            if user.uid not in firebase_user_ids and not (user.is_staff or user.is_superuser):
+                user.delete()
+
+        for user in firebase_users:
             if not User.objects.filter(uid=user.id).exists():
-                # Django 모델 생성 및 저장
+                # 사용자가 Django에서 존재하지 않으면, 생성
                 User.objects.create(
                     uid=user.id,
                     displayName=user.to_dict().get('displayName'),
                     email=user.to_dict().get('email'),
                     photoURL=user.to_dict().get('photoURL', "")
                 )
+            else:
+                # 사용자가 Django에서 존재하면, 업데이트
+                django_user = User.objects.get(uid=user.id)
+                django_user.displayName = user.to_dict().get('displayName')
+                django_user.email = user.to_dict().get('email')
+                django_user.photoURL = user.to_dict().get('photoURL', "")
+                django_user.save()
 
-        return HttpResponse("FireBase에 새로 등록된 유저 등록완료")
+        return HttpResponse("FireBase에 새로 등록된 유저 등록 및 삭제된 유저 제거, 기존 유저 정보 업데이트 완료")
+
+
+
+
 
 class syncdbfirebase(APIView):
     def post(self, request):
@@ -85,35 +99,44 @@ class UserDetailView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    def get(self, request, uid, *args, **kwargs):
+        try:
+            user = self.queryset.get(uid=uid)
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            raise Http404
+
 
 class UpdateUserView(BaseUserView, UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = 'uid'
+@transaction.atomic
+def patch(self, request, uid, *args, **kwargs):
+    try:
+        user = self.get_user(uid)
 
-    @transaction.atomic
-    def patch(self, request, uid, *args, **kwargs):
-        try:
-            user = self.get_user(uid)
-
-            if request.user.uid != uid:
-                return Response(
-                    {"detail": "다른 사용자의 정보를 수정할 수 없습니다."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-
-            data = request.data.copy()
-
-            serializer = self.get_serializer(user, data=data, partial=True)
-
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
+        if request.user.uid != uid:
             return Response(
-                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"detail": "다른 사용자의 정보를 수정할 수 없습니다."},
+                status=status.HTTP_403_FORBIDDEN,
             )
+
+        data = request.data.copy()
+
+        serializer = self.get_serializer(user, data=data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response(
+            {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 
 
 class DeleteUserView(BaseUserView):  # 유저 삭제
@@ -122,16 +145,10 @@ class DeleteUserView(BaseUserView):  # 유저 삭제
         try:
             user = self.get_user(uid)
 
-            if request.user.uid != uid:
-                return Response(
-                    {"detail": "다른 사용자의 정보를 삭제할 수 없습니다."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
             operation = user.delete()
 
             if operation:
                 response = {"message": "계정 삭제 완료"}
-
             else:
                 response = {"message": "계정 삭제 실패"}
 

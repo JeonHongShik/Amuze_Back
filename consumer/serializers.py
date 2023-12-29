@@ -3,28 +3,28 @@ from .models import Resume, Education, Career, Award, Region
 
 
 class EducationSerializer(serializers.ModelSerializer):
-    education = serializers.ListField(child=serializers.CharField())
+    education = serializers.CharField()
 
     class Meta:
         model = Education
         fields = ["id", "education", "resume"]
 
 class CareerSerializer(serializers.ModelSerializer):
-    career = serializers.ListField(child=serializers.CharField())
+    career = serializers.CharField()
 
     class Meta:
         model = Career
         fields = ["id", "career", "resume"]
 
 class AwardSerializer(serializers.ModelSerializer):
-    award = serializers.ListField(child=serializers.CharField())
+    award = serializers.CharField()
 
     class Meta:
         model = Award
         fields = ["id", "award", "resume"]
 
 class RegionSerializer(serializers.ModelSerializer):
-    region = serializers.ListField(child=serializers.CharField())
+    region = serializers.CharField()
 
     class Meta:
         model = Region
@@ -36,6 +36,12 @@ class ResumeSerializer(serializers.ModelSerializer):
     careers = CareerSerializer(many=True)
     awards = AwardSerializer(many=True)
     regions = RegionSerializer(many=True)
+    # mainimage = serializers.ImageField(max_length=None, use_url=True)
+    # otherimages1 = serializers.ImageField(max_length=None, use_url=True)
+    # otherimages2 = serializers.ImageField(max_length=None, use_url=True)
+    # otherimages3 = serializers.ImageField(max_length=None, use_url=True)
+    # otherimages4 = serializers.ImageField(max_length=None, use_url=True)
+    author = serializers.SerializerMethodField('get_author_name')
 
     class Meta:
         model = Resume
@@ -50,4 +56,12 @@ class ResumeSerializer(serializers.ModelSerializer):
             "careers",
             "awards",
             "regions",
+            "mainimage", 
+            "otherimages1", 
+            "otherimages2", 
+            "otherimages3", 
+            "otherimages4",
         ]
+
+    def get_author_name(self, obj):
+        return obj.author.displayName

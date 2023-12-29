@@ -10,9 +10,9 @@ from .views import (
 
 urlpatterns = [
     path("resume/", ResumeListView.as_view(), name="resume-list"),
-    path("resume/my/", GetMyResumeView.as_view(), name="my-resume"),
+    path("myresume/<str:uid>/", GetMyResumeView.as_view(), name="my-resume"),
     path("resume/<int:pk>/", ResumeDetailView.as_view(), name="resume-detail"),
     path("resume/create/", ResumeCreateView.as_view(), name="resume-create"),
-    path("resume/<int:pk>/update/", ResumeUpdateView.as_view(), name="resume-update"),
-    path("resume/<int:pk>/delete/", ResumeDeleteView.as_view(), name="resume-delete"),
+    path("resume/patch/<int:pk>/", ResumeUpdateView.as_view(), name="resume-update"),
+    path("resume/delete/<int:pk>/", ResumeDeleteView.as_view(), name="resume-delete"),
 ]

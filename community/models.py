@@ -7,7 +7,7 @@ from django.core.files.storage import default_storage as storage
 class Board(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField(default="")
-    writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
     created_date = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="liked_boards"
@@ -23,7 +23,7 @@ class Board(models.Model):
 
 class Comment(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="comments",null=True)
-    writer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
     content = models.TextField()
     created_date = models.DateTimeField(auto_now_add=True)
 
