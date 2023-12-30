@@ -24,9 +24,9 @@ from django.conf import settings
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Amuze FireBase",
-        default_version="v2.5.1.3",
-        description="FireBase Login Version 2.0",
+        title="FireBase Swagger API",
+        default_version="v3.0",
+        description="FireBaseLogin Version 3.0",
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
@@ -39,6 +39,7 @@ urlpatterns = [
     path("bookmarks/", include("bookmarks.urls")),
     path("resumes/", include("consumer.urls")),
     path("communities/", include("community.urls")),
+    path("amuze/",include("serach.urls")),
     re_path(
         r"^swagger(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),
