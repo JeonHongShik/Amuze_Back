@@ -16,4 +16,4 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ['id', 'author', 'title', 'region', 'type', 'pay', 'deadline', 'datetime', 'introduce', 'wishtype', 'mainimage', 'otherimages1', 'otherimages2', 'otherimages3', 'otherimages4']
 
     def get_author_name(self, obj):
-        return obj.author.displayName  
+        return obj.author.displayName
