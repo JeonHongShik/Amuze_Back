@@ -7,7 +7,6 @@ from consumer.models import Resume
 from post.models import Post
 from community.models import Board
 from rest_framework.pagination import PageNumberPagination
-from django.views.decorators.cache import cache_page # 캐싱처리
 
 class Paging(PageNumberPagination):
     page_size = 10
@@ -28,7 +27,6 @@ class BaseSearchView(generics.ListAPIView):
 class PostSearchView(BaseSearchView):
     serializer_class = PostSerializer
 
-    @cache_page(60 * 10) 
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
@@ -51,7 +49,6 @@ class PostSearchView(BaseSearchView):
 class BoardSearchView(BaseSearchView):
     serializer_class = BoardSerializer
 
-    @cache_page(60 * 10) 
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
@@ -67,7 +64,6 @@ class BoardSearchView(BaseSearchView):
 class ResumeSearchView(BaseSearchView):
     serializer_class = ResumeSerializer
 
-    @cache_page(60 * 15)  # 15분 동안 캐시
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
