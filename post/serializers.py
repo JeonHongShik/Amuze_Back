@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Post
-
+from datetime import datetime
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -10,6 +10,8 @@ class PostSerializer(serializers.ModelSerializer):
     # otherimages3 = serializers.ImageField(max_length=None, use_url=True)
     # otherimages4 = serializers.ImageField(max_length=None, use_url=True)
     author = serializers.SerializerMethodField('get_author_name')
+    deadline = serializers.SerializerMethodField()
+    datetime = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -17,3 +19,15 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_author_name(self, obj):
         return obj.author.displayName
+
+    def get_deadline(self, obj):
+        return obj.deadline.strftime('%Y-%m-%d')
+
+    def get_datetime(self, obj):
+        return obj.datetime.strftime('%Y-%m-%d')
+    
+    def to_internal_value(self, data):
+        internal_value = super().to_internal_value(data)
+        internal_value['deadline'] = datetime.strptime(data.get('deadline'), '%Y-%m-%d')
+        internal_value['datetime'] = datetime.strptime(data.get('datetime'), '%Y-%m-%d')
+        return internal_value
