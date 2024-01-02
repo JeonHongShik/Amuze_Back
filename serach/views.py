@@ -44,7 +44,7 @@ class PostSearchView(BaseSearchView):
             Q(datetime__contains=query) | 
             Q(introduce__contains=query) | 
             Q(author__displayName__contains=query)
-        )
+        ).distinct()
 
 class BoardSearchView(BaseSearchView):
     serializer_class = BoardSerializer
@@ -59,7 +59,7 @@ class BoardSearchView(BaseSearchView):
         return Board.objects.filter(
             Q(title__contains=query) | 
             Q(content__contains=query)
-        )
+        ).distinct()
     
 class ResumeSearchView(BaseSearchView):
     serializer_class = ResumeSerializer
@@ -81,4 +81,4 @@ class ResumeSearchView(BaseSearchView):
             Q(awards__award__contains=query) |
             Q(regions__region__contains=query) |
             Q(author__displayName__contains=query)
-        )
+        ).distinct()

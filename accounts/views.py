@@ -52,7 +52,7 @@ class SignupFirebaseView(BaseUserView):
                 django_user.photoURL = user.to_dict().get('photoURL', "")
                 django_user.save()
 
-        return HttpResponse("FireBase에 새로 등록된 유저 등록 및 삭제된 유저 제거, 기존 유저 정보 업데이트 완료")
+        return Response('회원가입 완료', status=status.HTTP_201_CREATED)
 
 
 
