@@ -31,9 +31,9 @@ class UserManager(BaseUserManager):
         return user
 
 class User(AbstractBaseUser, PermissionsMixin):
-    uid = models.TextField(primary_key=True, unique=True, default="uid")
-    displayName = models.CharField(max_length=50, default="name")
-    email = models.EmailField(max_length=100, unique=True, default="Email")
+    uid = models.CharField(primary_key=True, unique=True, max_length=50)
+    displayName = models.TextField(max_length=50)
+    email = models.EmailField(max_length=100, unique=True)
     photoURL = models.URLField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
