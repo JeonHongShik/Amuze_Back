@@ -112,23 +112,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 #     }
 # }
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": "amuze",
-#         "USER": "root",
-#         "PASSWORD": "1234",
-#         "HOST": "127.0.0.1",
-#         "PORT": "3306",
-#     }
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': r"config\mysql.cnf",
-        }
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "amuze",
+        "USER": "amuzemaster",
+        "PASSWORD": "Amuzemasterkey1234@",
+        "HOST": "3.39.21.42",
+        "PORT": "3306",
     }
 }
 
