@@ -1,5 +1,5 @@
 [client]
 database = amuze
-host = localhost
-user = root
-password = 1234
+host = 3.39.21.42
+user = amuzemaster
+password = Amuzemasterkey1234@
