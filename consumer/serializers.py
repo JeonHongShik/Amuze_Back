@@ -7,28 +7,28 @@ class EducationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Education
-        fields = ["id", "education", "resume"]
+        fields = ["education"]
 
 class CareerSerializer(serializers.ModelSerializer):
     career = serializers.CharField()
 
     class Meta:
         model = Career
-        fields = ["id", "career", "resume"]
+        fields = ["career"]
 
 class AwardSerializer(serializers.ModelSerializer):
     award = serializers.CharField()
 
     class Meta:
         model = Award
-        fields = ["id", "award", "resume"]
+        fields = ["award"]
 
 class RegionSerializer(serializers.ModelSerializer):
     region = serializers.CharField()
 
     class Meta:
         model = Region
-        fields = ["id", "region", "resume"]
+        fields = ["region"]
 
 
 class ResumeSerializer(serializers.ModelSerializer):
@@ -36,11 +36,7 @@ class ResumeSerializer(serializers.ModelSerializer):
     careers = CareerSerializer(many=True)
     awards = AwardSerializer(many=True)
     regions = RegionSerializer(many=True)
-    # mainimage = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages1 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages2 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages3 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages4 = serializers.ImageField(max_length=None, use_url=True)
+
     author = serializers.SerializerMethodField('get_author_name')
 
     class Meta:
@@ -65,3 +61,9 @@ class ResumeSerializer(serializers.ModelSerializer):
 
     def get_author_name(self, obj):
         return obj.author.displayName
+    
+        # mainimage = serializers.ImageField(max_length=None, use_url=True)
+    # otherimages1 = serializers.ImageField(max_length=None, use_url=True)
+    # otherimages2 = serializers.ImageField(max_length=None, use_url=True)
+    # otherimages3 = serializers.ImageField(max_length=None, use_url=True)
+    # otherimages4 = serializers.ImageField(max_length=None, use_url=True)

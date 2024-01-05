@@ -13,7 +13,7 @@ class Education(models.Model):
     education = models.TextField()
 
     def __str__(self):
-        return f"{self.education}"
+        return f"{self.resume.author}님이 작성한 게시글{self.education} 학력"
 
 
 class Career(models.Model):
@@ -23,7 +23,7 @@ class Career(models.Model):
     career = models.TextField()
 
     def __str__(self):
-        return f"{self.career}"
+        return f"{self.resume.author}님이 작성한 게시글 {self.career} 경력"
 
 
 class Award(models.Model):
@@ -33,7 +33,7 @@ class Award(models.Model):
     award = models.TextField()
 
     def __str__(self):
-        return f"{self.award}"
+        return f"{self.resume.author}님이 작성한 게시글 {self.award} 수상"
 
 
 class Region(models.Model):
@@ -43,7 +43,7 @@ class Region(models.Model):
     region = models.TextField()
 
     def __str__(self):
-        return f"{self.region}"
+        return f"{self.resume.author}님이 작성한 게시글 {self.region} 지역"
 
 class Resume(models.Model):
     author = models.ForeignKey(
