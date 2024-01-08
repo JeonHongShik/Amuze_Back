@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Resume, Education, Career, Award, Region
+from .models import Resume, Education, Career, Award, Region,Completion
 
 
 class EducationSerializer(serializers.ModelSerializer):
@@ -31,12 +31,20 @@ class RegionSerializer(serializers.ModelSerializer):
         fields = ["region"]
 
 
+class CompletionSerializer(serializers.ModelSerializer):
+    completion = serializers.CharField()
+
+    class Meta:
+        model = Completion
+        fields = ["completion"]
+        
 class ResumeSerializer(serializers.ModelSerializer):
     educations = EducationSerializer(many=True)
     careers = CareerSerializer(many=True)
     awards = AwardSerializer(many=True)
     regions = RegionSerializer(many=True)
-
+    completions = CompletionSerializer(many=True)
+    
     author = serializers.SerializerMethodField('get_author_name')
 
     class Meta:
@@ -52,6 +60,7 @@ class ResumeSerializer(serializers.ModelSerializer):
             "careers",
             "awards",
             "regions",
+            "completions",
             "mainimage", 
             "otherimages1", 
             "otherimages2", 
@@ -62,7 +71,7 @@ class ResumeSerializer(serializers.ModelSerializer):
     def get_author_name(self, obj):
         return obj.author.displayName
     
-        # mainimage = serializers.ImageField(max_length=None, use_url=True)
+    # mainimage = serializers.ImageField(max_length=None, use_url=True)
     # otherimages1 = serializers.ImageField(max_length=None, use_url=True)
     # otherimages2 = serializers.ImageField(max_length=None, use_url=True)
     # otherimages3 = serializers.ImageField(max_length=None, use_url=True)

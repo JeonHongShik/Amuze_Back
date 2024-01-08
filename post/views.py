@@ -10,6 +10,7 @@ from django.db import transaction
 from rest_framework import generics,status
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import default_storage
 
 #API 테스트용
 from django.views.decorators.csrf import csrf_exempt
@@ -104,9 +105,8 @@ class PostCreateView(BaseUserView):
 class PostUpdateView(BaseUserView):
     @transaction.atomic
     def patch(self, request, pk):
-        uid = request.data.get('uid')  # Get uid from request
+        uid = request.data.get('uid')
         try:
-            # Ensure the post is authored by the user
             post = Post.objects.get(id=pk, author__uid=uid)
 
             data = request.data
@@ -116,13 +116,18 @@ class PostUpdateView(BaseUserView):
             for field, value in post_data.items():
                 setattr(post, field, value)
 
-            post.mainimage = request.FILES.get("mainimage", post.mainimage)
-            post.otherimages1 = request.FILES.get("otherimages1", post.otherimages1)
-            post.otherimages2 = request.FILES.get("otherimages2", post.otherimages2)
-            post.otherimages3 = request.FILES.get("otherimages3", post.otherimages3)
-            post.otherimages4 = request.FILES.get("otherimages4", post.otherimages4)
-
-            post.save()
+            image_fields = ["mainimage", "otherimages1", "otherimages2", "otherimages3", "otherimages4"]
+            for image_field in image_fields:
+                if data.get(image_field) == 'null':
+                    # Django의 default_storage를 사용하여 이미지 파일 삭제
+                    if getattr(post, image_field):
+                        default_storage.delete(getattr(post, image_field).path)
+                    setattr(post, image_field, None)
+                else:
+                    image_file = request.FILES.get(image_field)
+                    if image_file:
+                        setattr(post, image_field, image_file)
+                        post.save()
 
             serializer = PostSerializer(post)
 

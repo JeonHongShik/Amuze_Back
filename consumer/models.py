@@ -15,6 +15,14 @@ class Education(models.Model):
     def __str__(self):
         return f"{self.resume.author}님이 작성한 게시글{self.education} 학력"
 
+class Completion(models.Model):
+    resume = models.ForeignKey(
+        "Resume", on_delete=models.CASCADE, related_name="completions"
+    )
+    completion = models.TextField()
+
+    def __str__(self):
+        return f"{self.resume.author}님이 작성한 게시글{self.completion}"
 
 class Career(models.Model):
     resume = models.ForeignKey(

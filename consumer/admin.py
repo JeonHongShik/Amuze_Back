@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Resume, Education, Career, Award, Region
+from .models import Resume, Education, Career, Award, Region, Completion
 
 
 class ResumeAdmin(admin.ModelAdmin):
@@ -14,6 +14,7 @@ class ResumeAdmin(admin.ModelAdmin):
         "educations_list",
         "careers_list",
         "awards_list",
+        "completions_list",
         "introduce",
         "created_at",
         "updated_at",
@@ -32,6 +33,8 @@ class ResumeAdmin(admin.ModelAdmin):
     def awards_list(self, obj):
         return ", ".join([str(award) for award in obj.awards.all()])
 
+    def completions_list(self, obj):
+        return ", ".join([str(completion) for completion in obj.completions.all()])
 
 class EducationAdmin(admin.ModelAdmin):
     list_display = (
@@ -39,13 +42,11 @@ class EducationAdmin(admin.ModelAdmin):
         "education",
     )
 
-
 class CareerAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "career",
     )
-
 
 class AwardAdmin(admin.ModelAdmin):
     list_display = (
@@ -53,20 +54,21 @@ class AwardAdmin(admin.ModelAdmin):
         "award",
     )
 
-
 class RegionAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "region",
     )
 
-
-class ImageAdmin(admin.ModelAdmin):
-    list_display = ("id",)
-
-
+class CompletionAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "completion",
+    )
+    
 admin.site.register(Resume, ResumeAdmin)
 admin.site.register(Education, EducationAdmin)
 admin.site.register(Career, CareerAdmin)
 admin.site.register(Award, AwardAdmin)
 admin.site.register(Region, RegionAdmin)
+admin.site.register(Completion, CompletionAdmin)
