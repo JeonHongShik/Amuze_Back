@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import generics, status
-from .models import Award, Education, Career, Region, Resume
+from .models import Award, Education, Career, Completion, Region, Resume
 from .serializers import ResumeSerializer
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
@@ -14,6 +14,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
 User = get_user_model()
+
 
 class BaseUserView(APIView):
     def get_user(self, uid):
@@ -47,8 +48,8 @@ class ResumeDetailView(BaseUserView):
             )
         serializer = ResumeSerializer(resume_user)
         return JsonResponse(serializer.data, safe=False)
-        
-        
+
+
 class ResumeCreateView(BaseUserView):
     @transaction.atomic
     def post(self, request):
@@ -87,28 +88,35 @@ class ResumeCreateView(BaseUserView):
                 otherimages4=otherimages4,
                 **resume_data
             )
-            educations_data = data.get("education").split(',')
-            careers_data = [data.get("career")] if ',' not in data.get("career") else data.get("career").split(',')
-            awards_data = [data.get("award")] if ',' not in data.get("award") else data.get("award").split(',')
-            regions_data = [data.get("region")] if ',' not in data.get("region") else data.get("region").split(',')
+            completions_data = data.get("completions").split(',') if data.get("completions") else []
+            print(f"completions_data: {completions_data}")
+            educations_data = data.get("educations").split(',') if data.get("educations") else []
+            careers_data = data.get("careers").split(',') if data.get("careers") else []
+            awards_data = data.get("awards").split(',') if data.get("awards") else []
+            regions_data = data.get("regions").split(',') if data.get("regions") else []
 
+
+
+            Completion.objects.bulk_create(
+                [Completion(completion=completion.strip(), resume=resume) for completion in completions_data if completion]
+            )
 
             Education.objects.bulk_create(
-                [Education(education=education.strip(), resume=resume) for education in educations_data]
+                [Education(education=education.strip(), resume=resume) for education in educations_data if education]
             )
 
             Career.objects.bulk_create(
-                [Career(career=career.strip(), resume=resume) for career in careers_data]
+                [Career(career=career.strip(), resume=resume) for career in careers_data if career]
             )
 
             Award.objects.bulk_create(
-                [Award(award=award.strip(), resume=resume) for award in awards_data]
+                [Award(award=award.strip(), resume=resume) for award in awards_data if award]
             )
 
             Region.objects.bulk_create(
-                [Region(region=region.strip(), resume=resume) for region in regions_data]
+                [Region(region=region.strip(), resume=resume) for region in regions_data if region]
             )
-
+            
             serializer = ResumeSerializer(resume)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -120,12 +128,68 @@ class ResumeCreateView(BaseUserView):
             )
 
 
+
+# class ResumeUpdateView(BaseUserView):
+#     @transaction.atomic
+#     def patch(self, request, pk):
+#         uid = request.data.get("uid")
+#         try:
+#             resume = Resume.objects.get(id=pk, author__uid=uid)
+
+#             data = request.data
+#             resume_fields = ["title", "gender", "age", "introduce"]
+#             resume_data = {field: data.get(field) for field in resume_fields}
+
+#             for field, value in resume_data.items():
+#                 setattr(resume, field, value)
+
+#             resume.mainimage = request.FILES.get("mainimage", resume.mainimage)
+#             resume.otherimages1 = request.FILES.get("otherimages1", resume.otherimages1)
+#             resume.otherimages2 = request.FILES.get("otherimages2", resume.otherimages2)
+#             resume.otherimages3 = request.FILES.get("otherimages3", resume.otherimages3)
+#             resume.otherimages4 = request.FILES.get("otherimages4", resume.otherimages4)
+
+#             resume.save()
+
+#             related_models = {
+#                 "educations": Education,
+#                 "careers": Career,
+#                 "awards": Award,
+#                 "completions": Completion,
+#                 "regions": Region,
+#             }
+
+#             for related_field, RelatedModel in related_models.items():
+#                 if related_field in data:
+#                     getattr(resume, related_field).all().delete()
+#                     items_data = data.get(related_field).split(",")
+#                     RelatedModel.objects.bulk_create(
+#                         [
+#                             RelatedModel(
+#                                 resume=resume, **{related_field[:-1]: item.strip()}
+#                             )
+#                             for item in items_data
+#                         ]
+#                     )
+
+#             serializer = ResumeSerializer(resume)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+
+#         except Resume.DoesNotExist:
+#             return Response(
+#                 {"detail": "이력서가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND
+#             )
+#         except Exception as e:
+#             return Response(
+#                 {"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"},
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             )
+
 class ResumeUpdateView(BaseUserView):
     @transaction.atomic
     def patch(self, request, pk):
-        uid = request.data.get('uid') 
+        uid = request.data.get("uid")
         try:
-
             resume = Resume.objects.get(id=pk, author__uid=uid)
 
             data = request.data
@@ -135,11 +199,12 @@ class ResumeUpdateView(BaseUserView):
             for field, value in resume_data.items():
                 setattr(resume, field, value)
 
-            resume.mainimage = request.FILES.get("mainimage", resume.mainimage)
-            resume.otherimages1 = request.FILES.get("otherimages1", resume.otherimages1)
-            resume.otherimages2 = request.FILES.get("otherimages2", resume.otherimages2)
-            resume.otherimages3 = request.FILES.get("otherimages3", resume.otherimages3)
-            resume.otherimages4 = request.FILES.get("otherimages4", resume.otherimages4)
+            image_fields = ["mainimage", "otherimages1", "otherimages2", "otherimages3", "otherimages4"]
+            for img_field in image_fields:
+                if img_field in request.FILES:
+                    setattr(resume, img_field, request.FILES.get(img_field))
+                elif data.get(img_field) in [None, 'null']:
+                    setattr(resume, img_field, None)
 
             resume.save()
 
@@ -147,34 +212,41 @@ class ResumeUpdateView(BaseUserView):
                 "educations": Education,
                 "careers": Career,
                 "awards": Award,
-                "regions": Region
+                "completions": Completion,
+                "regions": Region,
             }
 
             for related_field, RelatedModel in related_models.items():
                 if related_field in data:
-                    # 기존 연결된 객체 삭제
                     getattr(resume, related_field).all().delete()
-                    # 새로운 객체 생성 및 연결
-                    items_data = data.get(related_field).split(',')
+                    items_data = data.get(related_field).split(",")
                     RelatedModel.objects.bulk_create(
-                        [RelatedModel(resume=resume, **{related_field[:-1]: item.strip()}) for item in items_data]
+                        [
+                            RelatedModel(
+                                resume=resume, **{related_field[:-1]: item.strip()}
+                            )
+                            for item in items_data
+                        ]
                     )
 
             serializer = ResumeSerializer(resume)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Resume.DoesNotExist:
-            return Response({"detail": "이력서가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "이력서가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
-            return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
+            return Response(
+                {"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class ResumeDeleteView(BaseUserView):
     @transaction.atomic
     def delete(self, request, pk):
-        uid = request.data.get('uid')
+        uid = request.data.get("uid")
         try:
             resume = Resume.objects.get(id=pk, author__uid=uid)
 
@@ -182,6 +254,10 @@ class ResumeDeleteView(BaseUserView):
             return JsonResponse({"message": "이력서가 삭제되었습니다."}, status=status.HTTP_200_OK)
 
         except Resume.DoesNotExist:
-            return JsonResponse({"error": "이력서가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"error": "이력서가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

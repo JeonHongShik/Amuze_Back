@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Resume, Education, Career, Award, Region
+from .models import Resume, Education, Career, Award, Completion, Region
 
 
 class EducationSerializer(serializers.ModelSerializer):
@@ -9,6 +9,7 @@ class EducationSerializer(serializers.ModelSerializer):
         model = Education
         fields = ["education"]
 
+
 class CareerSerializer(serializers.ModelSerializer):
     career = serializers.CharField()
 
@@ -16,12 +17,22 @@ class CareerSerializer(serializers.ModelSerializer):
         model = Career
         fields = ["career"]
 
+
 class AwardSerializer(serializers.ModelSerializer):
     award = serializers.CharField()
 
     class Meta:
         model = Award
         fields = ["award"]
+
+
+class CompletionSerializer(serializers.ModelSerializer):
+    completion = serializers.CharField()
+
+    class Meta:
+        model = Completion
+        fields = ["completion"]
+
 
 class RegionSerializer(serializers.ModelSerializer):
     region = serializers.CharField()
@@ -35,9 +46,10 @@ class ResumeSerializer(serializers.ModelSerializer):
     educations = EducationSerializer(many=True)
     careers = CareerSerializer(many=True)
     awards = AwardSerializer(many=True)
+    completions = CompletionSerializer(many=True)
     regions = RegionSerializer(many=True)
 
-    author = serializers.SerializerMethodField('get_author_name')
+    author = serializers.SerializerMethodField("get_author_name")
 
     class Meta:
         model = Resume
@@ -51,19 +63,14 @@ class ResumeSerializer(serializers.ModelSerializer):
             "educations",
             "careers",
             "awards",
+            "completions",
             "regions",
-            "mainimage", 
-            "otherimages1", 
-            "otherimages2", 
-            "otherimages3", 
+            "mainimage",
+            "otherimages1",
+            "otherimages2",
+            "otherimages3",
             "otherimages4",
         ]
 
     def get_author_name(self, obj):
         return obj.author.displayName
-    
-        # mainimage = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages1 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages2 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages3 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages4 = serializers.ImageField(max_length=None, use_url=True)

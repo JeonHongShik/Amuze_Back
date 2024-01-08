@@ -101,12 +101,42 @@ class PostCreateView(BaseUserView):
             )
 
 
+# class PostUpdateView(BaseUserView):
+#     @transaction.atomic
+#     def patch(self, request, pk):
+#         uid = request.data.get('uid')
+#         try:
+#             post = Post.objects.get(id=pk, author__uid=uid)
+
+#             data = request.data
+#             post_fields = ["title", "region", "type", "wishtype", "pay", "deadline", "datetime", "introduce"]
+#             post_data = {field: data.get(field) for field in post_fields}
+
+#             for field, value in post_data.items():
+#                 setattr(post, field, value)
+
+#             post.mainimage = request.FILES.get("mainimage", post.mainimage)
+#             post.otherimages1 = request.FILES.get("otherimages1", post.otherimages1)
+#             post.otherimages2 = request.FILES.get("otherimages2", post.otherimages2)
+#             post.otherimages3 = request.FILES.get("otherimages3", post.otherimages3)
+#             post.otherimages4 = request.FILES.get("otherimages4", post.otherimages4)
+
+#             post.save()
+
+#             serializer = PostSerializer(post)
+
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+
+#         except Post.DoesNotExist:
+#             return Response({"detail": "게시물이 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+#         except Exception as e:
+#             return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class PostUpdateView(BaseUserView):
     @transaction.atomic
     def patch(self, request, pk):
-        uid = request.data.get('uid')  # Get uid from request
+        uid = request.data.get('uid')
         try:
-            # Ensure the post is authored by the user
             post = Post.objects.get(id=pk, author__uid=uid)
 
             data = request.data
@@ -116,11 +146,12 @@ class PostUpdateView(BaseUserView):
             for field, value in post_data.items():
                 setattr(post, field, value)
 
-            post.mainimage = request.FILES.get("mainimage", post.mainimage)
-            post.otherimages1 = request.FILES.get("otherimages1", post.otherimages1)
-            post.otherimages2 = request.FILES.get("otherimages2", post.otherimages2)
-            post.otherimages3 = request.FILES.get("otherimages3", post.otherimages3)
-            post.otherimages4 = request.FILES.get("otherimages4", post.otherimages4)
+            image_fields = ["mainimage", "otherimages1", "otherimages2", "otherimages3", "otherimages4"]
+            for img_field in image_fields:
+                if img_field in request.FILES:
+                    setattr(post, img_field, request.FILES.get(img_field))
+                elif data.get(img_field) in [None, 'null']:
+                    setattr(post, img_field, None)
 
             post.save()
 
