@@ -12,7 +12,6 @@ class Postbookmark(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    mark_check = models.BooleanField(default=False)
     
     class Meta:
         unique_together = (('author', 'post'),)
@@ -26,7 +25,6 @@ class Resumebookmark(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
-    mark_check = models.BooleanField(default=False)
     
     class Meta:
         unique_together = (('author', 'resume'),)
@@ -40,7 +38,6 @@ class Boardbookmark(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
-    mark_check = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (('author', 'board'),)

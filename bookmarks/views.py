@@ -13,6 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from .models import Post,Resume,Board
 
 User = get_user_model()
 
@@ -35,8 +36,6 @@ class GetMyPostBookmarksView(APIView):
         else:
             return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-
-
 class PostBookmarkCreateView(APIView):
     def post(self, request):
         uid = request.data.get('uid')
@@ -50,7 +49,6 @@ class PostBookmarkCreateView(APIView):
 
         data = request.data.copy()
         data['author'] = author.uid
-        data['mark_check'] = True
         serializer = PostFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
@@ -70,13 +68,26 @@ class PostBookmarkDeleteView(APIView):
             return JsonResponse({"error": "북마크가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            post.mark_check = False
             post.save()
             return JsonResponse({"message": "북마크가 삭제되었습니다."}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({"error": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
+class CheckPostBookmarkView(APIView):
+    def get(self, request, uid, post_id):
+        try:
+            user = get_user_model().objects.get(uid=uid)
+            post = Post.objects.get(id=post_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": "해당 'uid' 또는 'post_id'를 가진 사용자 또는 게시물이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        bookmark = Postbookmark.objects.filter(author=user, post=post).first()
+        if bookmark is not None:
+            return JsonResponse({"bookmark": True}, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({"bookmark": False}, status=status.HTTP_200_OK)
 
 
 
@@ -111,7 +122,6 @@ class ResumeBookmarkCreateView(APIView):
 
         data = request.data.copy()
         data['author'] = author.uid
-        data['mark_check'] = True
         serializer = ResumeFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
@@ -131,13 +141,25 @@ class ResumeBookmarkDeleteView(APIView):
             return JsonResponse({"error": "이력서 북마크가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            resume.mark_check = False
             resume.delete()
             return JsonResponse({"message": "이력서 북마크가 삭제되었습니다."}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({"error": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class CheckResumeBookmarkView(APIView):
+    def get(self, request, uid, resume_id):
+        try:
+            user = get_user_model().objects.get(uid=uid)
+            resume = Resume.objects.get(id=resume_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": "해당 'uid' 또는 'resume_id'를 가진 사용자 또는 이력서가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
+        bookmark = Resumebookmark.objects.filter(author=user, resume=resume).first()
+        if bookmark is not None:
+            return JsonResponse({"bookmark": True}, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({"bookmark": False}, status=status.HTTP_200_OK)
+            
 
 
         
@@ -172,7 +194,6 @@ class BoardBookmarkCreateView(APIView):
 
         data = request.data.copy()
         data['user'] = user.uid
-        data['mark_check'] = True
         serializer = BoardFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
@@ -192,8 +213,22 @@ class BoardBookmarkDeleteView(APIView):
             return JsonResponse({"error": "게시판 북마크가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            board.mark_check = False
             board.delete()
             return JsonResponse({"message": "게시판 북마크가 삭제되었습니다."}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({"error": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+class CheckBoardBookmarkView(APIView):
+    def get(self, request, uid, board_id):
+        try:
+            user = get_user_model().objects.get(uid=uid)
+            board = Board.objects.get(id=board_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": "해당 'uid' 또는 'board_id'를 가진 사용자 또는 게시글이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        bookmark = Boardbookmark.objects.filter(author=user, board=board).first()
+        if bookmark is not None:
+            return JsonResponse({"bookmark": True}, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({"bookmark": False}, status=status.HTTP_200_OK)
