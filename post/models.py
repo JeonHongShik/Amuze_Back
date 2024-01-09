@@ -26,7 +26,6 @@ class Post(models.Model):
     otherimages3 = models.FileField(upload_to="image/post/%Y/%m/%d/",null=True, blank=True)
     otherimages4 = models.FileField(upload_to="image/post/%Y/%m/%d/",null=True, blank=True)
 
-
         #이미지 이름 바꾸기 코드 짜기
     
     def __str__(self):

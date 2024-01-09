@@ -4,18 +4,11 @@ from datetime import datetime
 
 
 class PostSerializer(serializers.ModelSerializer):
-    # mainimage = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages1 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages2 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages3 = serializers.ImageField(max_length=None, use_url=True)
-    # otherimages4 = serializers.ImageField(max_length=None, use_url=True)
     author = serializers.SerializerMethodField('get_author_name')
-    # deadline = serializers.SerializerMethodField()
-    # datetime = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'title', 'region', 'type', 'pay', 'deadline', 'datetime', 'introduce', 'wishtype', 'mainimage', 'otherimages1', 'otherimages2', 'otherimages3', 'otherimages4']
+        fields = ['id', 'author', 'title', 'region', 'type', 'pay', 'deadline', 'datetime', 'introduce', 'wishtype','check_mark', 'mainimage', 'otherimages1', 'otherimages2', 'otherimages3', 'otherimages4']
 
     def get_author_name(self, obj):
         return obj.author.displayName

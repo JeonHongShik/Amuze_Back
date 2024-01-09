@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from requests import request
 from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
@@ -99,8 +100,8 @@ class PostCreateView(BaseUserView):
                 {"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
+            
+    
 # class PostUpdateView(BaseUserView):
 #     @transaction.atomic
 #     def patch(self, request, pk):

@@ -23,12 +23,18 @@ class GetMyPostBookmarksView(APIView):
         if uid is None:
             return JsonResponse({"error": "'uid'가 요청에 포함되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        posts = Postbookmark.objects.filter(author__uid=uid)
+        try:
+            user = get_user_model().objects.get(uid=uid)
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        posts = Postbookmark.objects.filter(author=user)
         if posts.exists():
             serializer = PostFavoriteSerializer(posts, many=True)
             return Response(serializer.data)
         else:
             return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 class PostBookmarkCreateView(APIView):
@@ -44,6 +50,7 @@ class PostBookmarkCreateView(APIView):
 
         data = request.data.copy()
         data['author'] = author.uid
+        data['mark_check'] = True
         serializer = PostFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
@@ -63,10 +70,12 @@ class PostBookmarkDeleteView(APIView):
             return JsonResponse({"error": "북마크가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            post.delete()
+            post.mark_check = False
+            post.save()
             return JsonResponse({"message": "북마크가 삭제되었습니다."}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({"error": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 
@@ -102,6 +111,7 @@ class ResumeBookmarkCreateView(APIView):
 
         data = request.data.copy()
         data['author'] = author.uid
+        data['mark_check'] = True
         serializer = ResumeFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
@@ -121,6 +131,7 @@ class ResumeBookmarkDeleteView(APIView):
             return JsonResponse({"error": "이력서 북마크가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
+            resume.mark_check = False
             resume.delete()
             return JsonResponse({"message": "이력서 북마크가 삭제되었습니다."}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -161,6 +172,7 @@ class BoardBookmarkCreateView(APIView):
 
         data = request.data.copy()
         data['user'] = user.uid
+        data['mark_check'] = True
         serializer = BoardFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
@@ -180,6 +192,7 @@ class BoardBookmarkDeleteView(APIView):
             return JsonResponse({"error": "게시판 북마크가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
+            board.mark_check = False
             board.delete()
             return JsonResponse({"message": "게시판 북마크가 삭제되었습니다."}, status=status.HTTP_200_OK)
         except Exception as e:
