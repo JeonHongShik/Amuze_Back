@@ -264,13 +264,13 @@ class AddLikeView(APIView):
         if user in board.likes.all():
             board.likes.remove(user)
             message = "좋아요가 취소되었습니다."
-            is_liked = False
+            check_like = False
         else:
             board.likes.add(user)
             message = "좋아요가 추가되었습니다."
-            is_liked = True
+            check_like = True
 
-        board.save()
+        board.save()  
 
-        return Response({"like_count": board.like_count, "message": message, "is_liked": is_liked})
+        return Response({"like_count": board.like_count, "message": message, "check_like": check_like})
 

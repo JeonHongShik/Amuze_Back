@@ -36,6 +36,27 @@ class GetMyPostBookmarksView(APIView):
         else:
             return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
+# class PostBookmarkCreateView(APIView):
+#     def post(self, request):
+#         uid = request.data.get('uid')
+#         if uid is None:
+#             return Response({'message': 'uid를 제공해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         try:
+#             author = User.objects.get(uid=uid)
+#         except User.DoesNotExist:
+#             return Response({'message': '유효하지 않은 uid입니다.'}, status=status.HTTP_404_NOT_FOUND)
+
+#         data = request.data.copy()
+#         data['author'] = author.uid
+#         serializer = PostFavoriteSerializer(data=data)
+
+#         if serializer.is_valid(raise_exception=True):
+#             serializer.save(author=author)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class PostBookmarkCreateView(APIView):
     def post(self, request):
         uid = request.data.get('uid')
@@ -52,10 +73,11 @@ class PostBookmarkCreateView(APIView):
         serializer = PostFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
-            serializer.save(author=author)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            post = serializer.save(author=author)
+            return Response({'id': post.id, 'post': serializer.data}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class PostBookmarkDeleteView(APIView):
@@ -125,10 +147,11 @@ class ResumeBookmarkCreateView(APIView):
         serializer = ResumeFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
-            serializer.save(author=author)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            resume = serializer.save(author=author)
+            return Response({'id': resume.id, 'resume': serializer.data}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class ResumeBookmarkDeleteView(APIView):
@@ -197,10 +220,11 @@ class BoardBookmarkCreateView(APIView):
         serializer = BoardFavoriteSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
-            serializer.save(author=user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            board = serializer.save(author=user)
+            return Response({'id': board.id, 'board': serializer.data}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class BoardBookmarkDeleteView(APIView):
