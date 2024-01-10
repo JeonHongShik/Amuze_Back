@@ -29,7 +29,7 @@ class Post(models.Model):
         #이미지 이름 바꾸기 코드 짜기
     
     def __str__(self):
-        return f"{self.author}님이 작성한 {self.title} 입니다."
+        return f"{self.author}님이 작성한 게시글 {self.title} 입니다."
     
     def get_favorited_users(self):
         return User.objects.filter(favorite__post=self)
