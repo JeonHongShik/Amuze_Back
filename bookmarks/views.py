@@ -90,27 +90,40 @@ class PostBookmarkDeleteView(APIView):
             return JsonResponse({"error": "북마크가 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            post.save()
+            post.delete()
             return JsonResponse({"message": "북마크가 삭제되었습니다."}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({"error": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
+# class CheckPostBookmarkView(APIView):
+#     def get(self, request, uid, post_id):
+#         try:
+#             user = get_user_model().objects.get(uid=uid)
+#             post = Post.objects.get(id=post_id)
+#         except ObjectDoesNotExist:
+#             return JsonResponse({"error": "해당 'uid' 또는 'post_id'를 가진 사용자 또는 게시물이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+#         bookmark = Postbookmark.objects.filter(author=user, post=post).first()
+#         if bookmark is not None:
+#             return JsonResponse({"bookmark": True}, status=status.HTTP_200_OK)
+#         else:
+#             return JsonResponse({"bookmark": False}, status=status.HTTP_200_OK)
+
 class CheckPostBookmarkView(APIView):
     def get(self, request, uid, post_id):
         try:
-            user = get_user_model().objects.get(uid=uid)
+            author = get_user_model().objects.get(uid=uid)
             post = Post.objects.get(id=post_id)
         except ObjectDoesNotExist:
             return JsonResponse({"error": "해당 'uid' 또는 'post_id'를 가진 사용자 또는 게시물이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        bookmark = Postbookmark.objects.filter(author=user, post=post).first()
+        bookmark = Postbookmark.objects.filter(author=author, post=post).first()
         if bookmark is not None:
-            return JsonResponse({"bookmark": True}, status=status.HTTP_200_OK)
+            return JsonResponse({"bookmark": True, "id": bookmark.id}, status=status.HTTP_200_OK)
         else:
-            return JsonResponse({"bookmark": False}, status=status.HTTP_200_OK)
-
+            return JsonResponse({"bookmark": False, "id": None}, status=status.HTTP_200_OK)
 
 
 # Resume
@@ -179,9 +192,9 @@ class CheckResumeBookmarkView(APIView):
 
         bookmark = Resumebookmark.objects.filter(author=user, resume=resume).first()
         if bookmark is not None:
-            return JsonResponse({"bookmark": True}, status=status.HTTP_200_OK)
+            return JsonResponse({"bookmark": True, "id": bookmark.id}, status=status.HTTP_200_OK)
         else:
-            return JsonResponse({"bookmark": False}, status=status.HTTP_200_OK)
+            return JsonResponse({"bookmark": False,"id": None}, status=status.HTTP_200_OK)
             
 
 
@@ -253,6 +266,6 @@ class CheckBoardBookmarkView(APIView):
 
         bookmark = Boardbookmark.objects.filter(author=user, board=board).first()
         if bookmark is not None:
-            return JsonResponse({"bookmark": True}, status=status.HTTP_200_OK)
+            return JsonResponse({"bookmark": True, "id": bookmark.id}, status=status.HTTP_200_OK)
         else:
-            return JsonResponse({"bookmark": False}, status=status.HTTP_200_OK)
+            return JsonResponse({"bookmark": False,"id": None}, status=status.HTTP_200_OK)
