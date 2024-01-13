@@ -42,7 +42,8 @@ class SignupFirebaseView(BaseUserView):
                     uid=user.id,
                     displayName=user.to_dict().get('displayName'),
                     email=user.to_dict().get('email'),
-                    photoURL=user.to_dict().get('photoURL', "")
+                    photoURL=user.to_dict().get('photoURL', ""),
+                    messagingToken=user.to_dict().get('messagingToken', "")
                 )
             else:
                 # 사용자가 Django에서 존재하면, 업데이트
@@ -50,9 +51,11 @@ class SignupFirebaseView(BaseUserView):
                 django_user.displayName = user.to_dict().get('displayName')
                 django_user.email = user.to_dict().get('email')
                 django_user.photoURL = user.to_dict().get('photoURL', "")
+                django_user.messagingToken = user.to_dict().get('messagingToken', "")
                 django_user.save()
 
         return Response('회원가입 완료', status=status.HTTP_201_CREATED)
+
 
 
 

@@ -40,6 +40,7 @@ urlpatterns = [
     path("resumes/", include("consumer.urls")),
     path("communities/", include("community.urls")),
     path("amuze/",include("serach.urls")),
+    path("chat/",include("message_token.urls")),
     re_path(
         r"^swagger(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),

@@ -35,6 +35,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     displayName = models.TextField(max_length=50)
     email = models.EmailField(max_length=100, unique=True)
     photoURL = models.URLField(null=True, blank=True)
+    messagingToken = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retouch_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
