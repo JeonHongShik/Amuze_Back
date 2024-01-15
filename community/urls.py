@@ -12,7 +12,7 @@ urlpatterns = [
     path("community/patch/<int:pk>/",UpdatecommunityView.as_view()),
     path("community/delete/<int:pk>/",CommunityDeleteView.as_view()),
     #comment
-    path("comment/",CommentlistView.as_view()),
+    path("comment/<int:board_id>/",CommentlistView.as_view()),
     path("comment/create/",CommentCreateView.as_view()),
     path("comment/patch/<int:pk>/",commentupdateeview.as_view()),
     path("comment/delete/<int:pk>/",commentdeleteview.as_view()),

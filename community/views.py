@@ -144,14 +144,23 @@ class CommunityDeleteView(BaseUserView):
 
 
 
-
-
 #Comment
 class CommentlistView(BaseUserView):
-    serializer_class = CommentSerializer
-
+    seializer_class = CommentSerializer
+    
     def get_queryset(self):
-        return Comment.objects.all()
+        board_id = self.kwargs.get('board_id',None)
+        if board_id is not None:
+            return Comment.objects.filter(board=board_id)
+        else:
+            
+            return Comment.objects.none()
+        
+        
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.seializer_class(queryset, many=True)
+        return JsonResponse(serializer.data,safe=False,status=status.HTTP_200_OK)
 
 
 class CommentCreateView(BaseUserView):

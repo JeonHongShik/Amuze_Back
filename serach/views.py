@@ -82,3 +82,61 @@ class ResumeSearchView(BaseSearchView):
             Q(regions__region__contains=query) |
             Q(author__displayName__contains=query)
         ).distinct()
+        
+        
+        
+class ResumeKeywordSearchView(BaseSearchView):
+    serializer_class = ResumeSerializer
+
+    def get_queryset(self):
+        region_values=self.request.GET.getlist('region',[])
+        
+        if len(region_values) > 1:
+            queryset = Resume.objects.filter(regions__region__icontains=region_values[0].strip())
+        
+            for region_value in region_values[1:]:
+                queryset = queryset.filter(regions__region__icontains=region_value.strip())
+                
+        else:
+            queryset = Resume.objects.all()
+            if region_values:
+                queryset = queryset.filter(regions__region__icontains=region_values[0].strip())
+                
+        return queryset.distinct()
+    
+    
+        # def get_queryset(self):
+    #     region_param=self.request.GET.get('region','')
+        
+    #     region_value = region_param if region_param else []
+        
+    #     region_query = Q()
+    #     for word in region_value:
+    #         region_query |= Q(regions__region__contains=word.strip())
+            
+    #     queryset = Resume.objects.all()
+        
+    #     if region_query:
+    #         queryset = queryset.filter(region_query)
+            
+    #     return queryset.distinct()
+    
+    
+# class PostKeywordSearchView(BaseSearchView):
+#     serializer_class = PostSerializer
+    
+#     def get_queryset(self):
+#         region_param=self.request.GET.get('region','')
+        
+#         region_value = region_param if region_param else []
+        
+#         region_query = Q()
+#         for word in region_value:
+#             region_query |= Q(region__contains=word.strip())
+            
+#         queryset = Post.objects.all()
+        
+#         if region_query:
+#             queryset = queryset.filter(region_query)
+            
+#         return queryset.distinct()
