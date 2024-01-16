@@ -26,7 +26,7 @@ from django.dispatch import receiver
 
 
 @receiver(post_save, sender=Comment)
-def send_to_firebase_cloude_messaging(sender, instance, created, **kwargs):
+def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
     if created:
         user = instance.user.uid
         registration_token = user.messagingToken
