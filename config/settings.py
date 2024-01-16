@@ -14,7 +14,7 @@ from pathlib import Path
 
 import os, json
 from django.core.exceptions import ImproperlyConfigured
-
+from django.apps import AppConfig
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -67,6 +67,8 @@ INSTALLED_APPS = [
     "consumer",  # 이력서
     "post",  # 공고
     "report",  # 신고
+    
+    "message_toke_Config",
 ]
 
 
@@ -185,3 +187,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 #         },
 #     },
 # }
+
+
+class message_token_Config(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'message_token'
+    
+    def ready(self):
+        import message_token.views  
