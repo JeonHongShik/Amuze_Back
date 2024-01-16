@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from firebase_admin import messaging
-from community.models import Board
+from community.models import Board,Comment
 from accounts.models import User
 from django.http import HttpResponse
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 def send_to_firebase_cloud_messaging(request, uid):  
     user = User.objects.get(uid=uid)
@@ -20,4 +22,23 @@ def send_to_firebase_cloud_messaging(request, uid):
     response = messaging.send(message)
     print('Successfully sent message:', response)
 
-    return HttpResponse("Message sent successfully")  # 추가된 부분
+    return HttpResponse("Message sent successfully")
+
+
+@receiver(post_save, sender=Comment)
+def send_to_firebase_cloude_messaging(sender, instance, created, **kwargs):
+    if created:
+        user = instance.user.uid
+        registration_token = user.messagingToken
+        
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title='새로운 댓글 알림',
+                body=f'새로운 댓글이 달렸습니다. {instance.content}',
+            ),
+            token=registration_token,
+        )
+        
+        
+        response = messaging.send(message)
+        print('Successfully sent message:', response)
