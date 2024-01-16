@@ -12,9 +12,9 @@ class Post(models.Model):
     )
     title = models.CharField(max_length=100,null=True,blank=True)
     region  = models.TextField(null=True,blank=True)
-    type = models.TextField(null=True,blank=True)
+    type = models.TextField(null=True,blank=True) #공연무대(전시무대)/결혼식,졸업식공연 등등
     pay = models.TextField(null=True,blank=True)
-    wishtype = models.TextField(null=True,blank=True)
+    wishtype = models.TextField(null=True,blank=True) #무용선호타입/현대무용 같은거
     deadline = models.CharField(max_length=50,null=True,blank=True)
     datetime = models.CharField(max_length=50,null=True,blank=True)
     introduce = models.TextField(null=True,blank=True)

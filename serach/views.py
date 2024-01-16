@@ -84,43 +84,55 @@ class ResumeSearchView(BaseSearchView):
         ).distinct()
         
         
-        
+
+
 class ResumeKeywordSearchView(BaseSearchView):
     serializer_class = ResumeSerializer
 
     def get_queryset(self):
-        region_values=self.request.GET.getlist('region',[])
-        
-        if len(region_values) > 1:
-            queryset = Resume.objects.filter(regions__region__icontains=region_values[0].strip())
-        
-            for region_value in region_values[1:]:
-                queryset = queryset.filter(regions__region__icontains=region_value.strip())
-                
-        else:
-            queryset = Resume.objects.all()
-            if region_values:
-                queryset = queryset.filter(regions__region__icontains=region_values[0].strip())
-                
+        region_values = self.request.GET.getlist('region', [])
+        gender_values = self.request.GET.getlist('gender', [])
+        education_values = self.request.GET.getlist('education', [])
+
+        # Initialize queryset
+        queryset = Resume.objects.all()
+
+        # Apply region filter
+        for region_value in region_values:
+            queryset = queryset.filter(regions__region__icontains=region_value.strip())
+
+        # Apply gender filter
+        for gender_value in gender_values:
+            queryset = queryset.filter(gender__icontains=gender_value.strip())
+
+        # Apply education filter
+        for education_value in education_values:
+            queryset = queryset.filter(educations__education__icontains=education_value.strip())
+
         return queryset.distinct()
-    
-    
-        # def get_queryset(self):
-    #     region_param=self.request.GET.get('region','')
+
+
+
+
+
+# class ResumeKeywordSearchView(BaseSearchView):
+#     serializer_class = ResumeSerializer
+
+#     def get_queryset(self):
+#         region_values=self.request.GET.getlist('region',[])
         
-    #     region_value = region_param if region_param else []
+#         if len(region_values) > 1:
+#             queryset = Resume.objects.filter(regions__region__icontains=region_values[0].strip())
         
-    #     region_query = Q()
-    #     for word in region_value:
-    #         region_query |= Q(regions__region__contains=word.strip())
-            
-    #     queryset = Resume.objects.all()
-        
-    #     if region_query:
-    #         queryset = queryset.filter(region_query)
-            
-    #     return queryset.distinct()
-    
+#             for region_value in region_values[1:]:
+#                 queryset = queryset.filter(regions__region__icontains=region_value.strip())
+                
+#         else:
+#             queryset = Resume.objects.all()
+#             if region_values:
+#                 queryset = queryset.filter(regions__region__icontains=region_values[0].strip())
+                
+#         return queryset.distinct()
     
 # class PostKeywordSearchView(BaseSearchView):
 #     serializer_class = PostSerializer

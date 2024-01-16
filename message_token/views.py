@@ -35,9 +35,8 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
         
         message = messaging.Message(
             notification=messaging.Notification(
-                title='커뮤니티 새로운 댓글 알림',
-                body=f'사용자님의 게시글에 새로운 댓글이 달렸습니다.
-                        {instance.content}',
+                title='새로운 댓글 알림',
+                body=f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
             ),
             data={'baord_id':str(instance.board.id),
             },
