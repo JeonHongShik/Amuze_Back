@@ -28,8 +28,10 @@ from django.dispatch import receiver
 @receiver(post_save, sender=Comment)
 def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
     if created:
-        user = instance.author.uid
+        user = instance.author
         registration_token = user.messagingToken
+        print('Registration token:', registration_token)
+        
         
         message = messaging.Message(
             notification=messaging.Notification(
