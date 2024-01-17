@@ -186,6 +186,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 #     },
 # }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+}
+
+LOG_DIR = '/var/log/django'
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR, exist_ok=True)
 
 class message_token_Config(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
