@@ -49,7 +49,7 @@ class ResumeSerializer(serializers.ModelSerializer):
     completions = CompletionSerializer(many=True)
     regions = RegionSerializer(many=True)
 
-    author = serializers.SerializerMethodField("get_author_name")
+    # author = serializers.SerializerMethodField("get_author_name")
 
     class Meta:
         model = Resume

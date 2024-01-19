@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = serializers.SerializerMethodField('get_author_name')
+    # author = serializers.SerializerMethodField('get_author_name')
 
     class Meta:
         model = Post
