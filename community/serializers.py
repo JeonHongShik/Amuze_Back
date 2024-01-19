@@ -7,8 +7,8 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = "__all__"
 
-    def get_author_name(self, obj):
-        return obj.author.displayName  
+    # def get_author_name(self, obj):
+    #     return obj.author.displayName  
 
 class BoardSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField('get_author_name')
@@ -16,5 +16,5 @@ class BoardSerializer(serializers.ModelSerializer):
         model = Board
         fields = "__all__"
         
-    def get_author_name(self, obj):
-        return obj.author.displayName  
+    # def get_author_name(self, obj):
+    #     return obj.author.displayName  

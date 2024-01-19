@@ -8,8 +8,8 @@ class PostFavoriteSerializer(serializers.ModelSerializer):
         model = Postbookmark
         fields = "__all__"
     
-    def get_author_name(self, obj):
-        return obj.author.displayName
+    # def get_author_name(self, obj):
+    #     return obj.author.displayName  
 
 class ResumeFavoriteSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField('get_author_name')
@@ -27,6 +27,6 @@ class BoardFavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Boardbookmark
         fields = "__all__"
-
-    def get_author_name(self, obj):
-        return obj.author.displayName
+        
+    # def get_author_name(self, obj):
+    #     return obj.author.displayName  

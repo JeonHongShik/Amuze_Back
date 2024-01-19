@@ -72,5 +72,5 @@ class ResumeSerializer(serializers.ModelSerializer):
             "otherimages4",
         ]
 
-    def get_author_name(self, obj):
-        return obj.author.displayName
+    # def get_author_name(self, obj):
+    #     return obj.author.displayName  
