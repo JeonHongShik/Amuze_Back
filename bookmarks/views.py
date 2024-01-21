@@ -23,6 +23,23 @@ User = get_user_model()
 
 # Post
 
+# class GetMyPostBookmarksView(APIView):
+#     def get(self, request, uid=None):
+#         if uid is None:
+#             return JsonResponse({"error": "'uid'가 요청에 포함되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+#         try:
+#             user = get_user_model().objects.get(uid=uid)
+#         except ObjectDoesNotExist:
+#             return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+#         posts = Post.objects.filter(author=user)
+#         if posts.exists():
+#             serializer = PostSerializer(posts, many=True)
+#             return Response(serializer.data)
+#         else:
+#             return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
 class GetMyPostBookmarksView(APIView):
     def get(self, request, uid=None):
         if uid is None:
@@ -33,12 +50,15 @@ class GetMyPostBookmarksView(APIView):
         except ObjectDoesNotExist:
             return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        posts = Post.objects.filter(author=user)
-        if posts.exists():
+        bookmarks = Postbookmark.objects.filter(author=user)  # 사용자의 즐겨찾기한 게시물들을 가져옵니다.
+
+        if bookmarks.exists():
+            posts = Post.objects.filter(id__in=bookmarks.values_list('post_id', flat=True))
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data)
         else:
-            return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"error": "즐겨찾기한 게시물이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 # class PostBookmarkCreateView(APIView):
@@ -142,13 +162,17 @@ class GetMyResumeBookmarksView(APIView):
         except ObjectDoesNotExist:
             return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        resumes = Resume.objects.filter(author=user)
-        if resumes.exists():
+        bookmarks = Resumebookmark.objects.filter(author=user)
+
+        if bookmarks.exists():
+            resumes = Resume.objects.filter(id__in=bookmarks.values_list('resume_id', flat=True))
             serializer = ResumeSerializer(resumes, many=True)
             return Response(serializer.data)
         else:
-            return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"error": "즐겨찾기한 이력서가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
+
+        
 class ResumeBookmarkCreateView(APIView):
     def post(self, request):
         uid = request.data.get('uid')
@@ -215,12 +239,15 @@ class GetMyBoardBookmarksView(APIView):
         except ObjectDoesNotExist:
             return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        boards = Board.objects.filter(author=user)
-        if boards.exists():
+        bookmarks = Boardbookmark.objects.filter(author=user)
+
+        if bookmarks.exists():
+            boards = Board.objects.filter(id__in=bookmarks.values_list('board_id', flat=True))
             serializer = BoardSerializer(boards, many=True)
             return Response(serializer.data)
         else:
-            return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"error": "즐겨찾기한 게시물이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
 
 class BoardBookmarkCreateView(APIView):
     def post(self, request):
