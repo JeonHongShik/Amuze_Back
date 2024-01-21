@@ -1,6 +1,6 @@
 # views.py
 
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
@@ -18,6 +18,7 @@ from .models import Post,Resume,Board
 from post.serializers import PostSerializer
 from consumer.serializers import ResumeSerializer
 from community.serializers import BoardSerializer
+import json
 
 User = get_user_model()
 
@@ -57,7 +58,7 @@ class GetMyPostBookmarksView(APIView):
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data)
         else:
-            return JsonResponse({"error": "즐겨찾기한 게시물이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return HttpResponse(json.dumps(None), content_type='application/json')
 
 
 
@@ -169,7 +170,7 @@ class GetMyResumeBookmarksView(APIView):
             serializer = ResumeSerializer(resumes, many=True)
             return Response(serializer.data)
         else:
-            return JsonResponse({"error": "즐겨찾기한 이력서가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return HttpResponse(json.dumps(None), content_type='application/json')
 
 
         
@@ -246,7 +247,7 @@ class GetMyBoardBookmarksView(APIView):
             serializer = BoardSerializer(boards, many=True)
             return Response(serializer.data)
         else:
-            return JsonResponse({"error": "즐겨찾기한 게시물이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return HttpResponse(json.dumps(None), content_type='application/json')
 
 
 class BoardBookmarkCreateView(APIView):
