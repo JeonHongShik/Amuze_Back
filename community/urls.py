@@ -6,7 +6,7 @@ from .views import AddLikeView
 urlpatterns = [
     #community
     path("community/", CommunitylistView.as_view()),
-    path("mycommunity/<str:uid>", MyCommunityView.as_view()),
+    path("mycommunity/<str:uid>/", MyCommunityView.as_view()),
     path("community/detail/<int:pk>/", CommunityDetailView.as_view()),
     path("community/create/", CreatecommunityView.as_view()),
     path("community/patch/<int:pk>/",UpdatecommunityView.as_view()),

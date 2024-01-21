@@ -15,6 +15,10 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 from .models import Post,Resume,Board
 
+from post.serializers import PostSerializer
+from consumer.serializers import ResumeSerializer
+from community.serializers import BoardSerializer
+
 User = get_user_model()
 
 # Post
@@ -29,12 +33,13 @@ class GetMyPostBookmarksView(APIView):
         except ObjectDoesNotExist:
             return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        posts = Postbookmark.objects.filter(author=user)
+        posts = Post.objects.filter(author=user)
         if posts.exists():
-            serializer = PostFavoriteSerializer(posts, many=True)
+            serializer = PostSerializer(posts, many=True)
             return Response(serializer.data)
         else:
             return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
 
 # class PostBookmarkCreateView(APIView):
 #     def post(self, request):
@@ -131,15 +136,15 @@ class GetMyResumeBookmarksView(APIView):
     def get(self, request, uid=None):
         if uid is None:
             return JsonResponse({"error": "'uid'가 요청에 포함되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             user = get_user_model().objects.get(uid=uid)
         except ObjectDoesNotExist:
             return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        resumes = Resumebookmark.objects.filter(author=user)
+        resumes = Resume.objects.filter(author=user)
         if resumes.exists():
-            serializer = ResumeFavoriteSerializer(resumes, many=True)
+            serializer = ResumeSerializer(resumes, many=True)
             return Response(serializer.data)
         else:
             return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
@@ -204,15 +209,15 @@ class GetMyBoardBookmarksView(APIView):
     def get(self, request, uid):
         if uid is None:
             return JsonResponse({"error": "'uid'가 요청에 포함되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             user = get_user_model().objects.get(uid=uid)
         except ObjectDoesNotExist:
             return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        boards = Boardbookmark.objects.filter(author=user)
+        boards = Board.objects.filter(author=user)
         if boards.exists():
-            serializer = BoardFavoriteSerializer(boards, many=True)
+            serializer = BoardSerializer(boards, many=True)
             return Response(serializer.data)
         else:
             return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
