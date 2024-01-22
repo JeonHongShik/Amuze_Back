@@ -58,7 +58,7 @@ class GetMyPostBookmarksView(APIView):
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data)
         else:
-            return HttpResponse()
+            return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
 
 
@@ -170,7 +170,7 @@ class GetMyResumeBookmarksView(APIView):
             serializer = ResumeSerializer(resumes, many=True)
             return Response(serializer.data)
         else:
-            return HttpResponse()
+            return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
 
         
@@ -247,7 +247,7 @@ class GetMyBoardBookmarksView(APIView):
             serializer = BoardSerializer(boards, many=True)
             return Response(serializer.data)
         else:
-            return HttpResponse()
+            return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
 
 class BoardBookmarkCreateView(APIView):

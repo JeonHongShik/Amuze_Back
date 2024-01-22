@@ -8,12 +8,8 @@ from post.models import Post
 from community.models import Board
 from rest_framework.pagination import PageNumberPagination
 
-class Paging(PageNumberPagination):
-    page_size = 10
 
 class BaseSearchView(generics.ListAPIView):
-    pagination_class = Paging
-
     def get_queryset(self):
         raise NotImplementedError()
 

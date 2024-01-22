@@ -38,7 +38,7 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
                 title='새로운 댓글 알림',
                 body=f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
             ),
-            data={'baord_id':str(instance.board.id),
+            data={'board_id':str(instance.board.id),
             },
             token=registration_token,
         )
