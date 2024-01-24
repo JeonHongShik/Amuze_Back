@@ -22,24 +22,6 @@ import json
 
 User = get_user_model()
 
-# Post
-
-# class GetMyPostBookmarksView(APIView):
-#     def get(self, request, uid=None):
-#         if uid is None:
-#             return JsonResponse({"error": "'uid'가 요청에 포함되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-#         try:
-#             user = get_user_model().objects.get(uid=uid)
-#         except ObjectDoesNotExist:
-#             return JsonResponse({"error": "해당 'uid'를 가진 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
-
-#         posts = Post.objects.filter(author=user)
-#         if posts.exists():
-#             serializer = PostSerializer(posts, many=True)
-#             return Response(serializer.data)
-#         else:
-#             return JsonResponse({"error": "북마크가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
 class GetMyPostBookmarksView(APIView):
     def get(self, request, uid=None):
