@@ -262,13 +262,18 @@ class commentdeleteview(BaseUserView):
         except Exception as e:
             return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class MyCommentsView(APIView):
+    def get(self, request, uid):
+        comments = Comment.objects.filter(author=uid)
+        serializer = CommentSerializer(comments, many=True)
+        return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
 
 #add count
 class AddLikeView(APIView):
     def post(self, request, pk):
         board = get_object_or_404(Board, pk=pk)
         uid = request.data.get('uid')
-        user = get_object_or_404(User, uid=uid)
+        user = get_object_or_404(User, pk=uid)  # 'uid' 대신 'pk'를 사용해야 합니다.
 
         if user in board.likes.all():
             board.likes.remove(user)
@@ -279,7 +284,10 @@ class AddLikeView(APIView):
             message = "좋아요가 추가되었습니다."
             check_like = True
 
-        board.save()  
+        like_count = board.likes.count()  # 좋아요 개수를 업데이트합니다.
 
-        return Response({"like_count": board.like_count, "message": message, "check_like": check_like})
-
+        return Response({
+            "like_count": like_count,
+            "message": message,
+            "check_like": check_like
+        }, status=status.HTTP_200_OK)

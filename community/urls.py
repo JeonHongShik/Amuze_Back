@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import CommunitylistView, CreatecommunityView,UpdatecommunityView,CommunityDeleteView,MyCommunityView,CommunityDetailView
 from .views import CommentlistView,CommentCreateView,commentupdateeview,commentdeleteview
-from .views import AddLikeView
+from .views import AddLikeView,MyCommentsView
 
 urlpatterns = [
     #community
@@ -16,6 +16,7 @@ urlpatterns = [
     path("comment/create/",CommentCreateView.as_view()),
     path("comment/patch/<int:pk>/",commentupdateeview.as_view()),
     path("comment/delete/<int:pk>/",commentdeleteview.as_view()),
+    path("mycomment/<str:uid>/",MyCommentsView.as_view()),
     #add like
     path("like_add_count/<int:pk>/",AddLikeView.as_view()),
 ]

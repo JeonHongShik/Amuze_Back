@@ -5,6 +5,7 @@ from accounts.models import User
 from django.http import HttpResponse
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from .models import Notification 
 
 # def send_to_firebase_cloud_messaging(request, uid):  
 #     user = User.objects.get(uid=uid)
@@ -25,24 +26,51 @@ from django.dispatch import receiver
 #     return HttpResponse("Message sent successfully")
 
 
+# @receiver(post_save, sender=Comment)
+# def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
+#     if created:
+#         user = instance.author
+#         registration_token = user.messagingToken
+#         print('Registration token:', registration_token)
+        
+        
+#         message = messaging.Message(
+#             notification=messaging.Notification(
+#                 title='새로운 댓글 알림',
+#                 body=f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
+#             ),
+#             data={'board_id':str(instance.board.id),
+#             },
+#             token=registration_token,
+#         )
+        
+        
+#         response = messaging.send(message)
+#         print('Successfully sent message:', response)
+
 @receiver(post_save, sender=Comment)
 def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
     if created:
         user = instance.author
         registration_token = user.messagingToken
         print('Registration token:', registration_token)
-        
-        
+
         message = messaging.Message(
             notification=messaging.Notification(
                 title='새로운 댓글 알림',
                 body=f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
             ),
-            data={'board_id':str(instance.board.id),
-            },
+            data={'board_id':str(instance.board.id)},
             token=registration_token,
         )
-        
-        
+
         response = messaging.send(message)
         print('Successfully sent message:', response)
+
+        # 알림을 생성합니다.
+        Notification.objects.create(
+            uid=user,
+            title=instance.board.title,
+            content=f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
+            board_id=instance.board.id,
+        )

@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "consumer",  # 이력서
     "post",  # 공고
     "report",  # 신고
+    "message_token",
 ]
 
 

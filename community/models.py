@@ -16,11 +16,6 @@ class Board(models.Model):
     def __str__(self):
         return self.title
 
-    @property
-    def like_count(self):
-        return self.likes.count()
-
-
 class Comment(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="comments",null=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
