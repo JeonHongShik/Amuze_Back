@@ -272,10 +272,10 @@ class MyCommentsView(APIView):
 class AddLikeView(APIView):
     def get(self, request, pk):
         board = get_object_or_404(Board, pk=pk)
-        uid = request.query_params.get('uid')  # URL 쿼리 파라미터에서 'uid'를 가져옵니다.
+        uid = request.query_params.get('uid') 
         user = get_object_or_404(User, pk=uid)
 
-        check_like = user in board.likes.all()  # 'check_like' 상태를 확인합니다.
+        check_like = user in board.likes.all() 
 
         return Response({
             "check_like": check_like
