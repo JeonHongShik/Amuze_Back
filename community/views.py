@@ -268,18 +268,33 @@ class MyCommentsView(APIView):
         serializer = CommentSerializer(comments, many=True)
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
 
+class CheckLikeView(APIView):
+    def get(self, request, uid, pk):
+        try:
+            user = get_user_model().objects.get(pk=uid)
+            board = Board.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": "해당 'uid' 또는 'pk'를 가진 사용자 또는 게시글이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        check_like = user in board.likes.all()
+
+        if check_like:
+            return JsonResponse({"check_like": True, "board_id": pk}, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({"check_like": False, "board_id": pk}, status=status.HTTP_200_OK)
+
 
 class AddLikeView(APIView):
-    def get(self, request, pk):
-        board = get_object_or_404(Board, pk=pk)
-        uid = request.query_params.get('uid') 
-        user = get_object_or_404(User, pk=uid)
+    # def get(self, request, pk):
+    #     board = get_object_or_404(Board, pk=pk)
+    #     uid = request.query_params.get('uid') 
+    #     user = get_object_or_404(User, pk=uid)
 
-        check_like = user in board.likes.all() 
+    #     check_like = user in board.likes.all() 
 
-        return Response({
-            "check_like": check_like
-        }, status=status.HTTP_200_OK)
+    #     return Response({
+    #         "check_like": check_like
+    #     }, status=status.HTTP_200_OK)
 
     def post(self, request, pk):
         board = get_object_or_404(Board, pk=pk)

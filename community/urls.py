@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import CommunitylistView, CreatecommunityView,UpdatecommunityView,CommunityDeleteView,MyCommunityView,CommunityDetailView
 from .views import CommentlistView,CommentCreateView,commentupdateeview,commentdeleteview
-from .views import AddLikeView,MyCommentsView
+from .views import AddLikeView,MyCommentsView,CheckLikeView
 
 urlpatterns = [
     #community
@@ -19,5 +19,5 @@ urlpatterns = [
     path("mycomment/<str:uid>/",MyCommentsView.as_view()),
     #add like
     path("like_add_count/<int:pk>/",AddLikeView.as_view()),
-    path('check_like/<int:pk>/', AddLikeView.as_view(), name='check_like'),
+    path('check_like/<str:uid>/<int:pk>/', CheckLikeView.as_view(), name='check_like'),
 ]
