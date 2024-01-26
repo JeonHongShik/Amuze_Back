@@ -268,12 +268,23 @@ class MyCommentsView(APIView):
         serializer = CommentSerializer(comments, many=True)
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
 
-#add count
+
 class AddLikeView(APIView):
+    def get(self, request, pk):
+        board = get_object_or_404(Board, pk=pk)
+        uid = request.query_params.get('uid')  # URL 쿼리 파라미터에서 'uid'를 가져옵니다.
+        user = get_object_or_404(User, pk=uid)
+
+        check_like = user in board.likes.all()  # 'check_like' 상태를 확인합니다.
+
+        return Response({
+            "check_like": check_like
+        }, status=status.HTTP_200_OK)
+
     def post(self, request, pk):
         board = get_object_or_404(Board, pk=pk)
         uid = request.data.get('uid')
-        user = get_object_or_404(User, pk=uid)  # 'uid' 대신 'pk'를 사용해야 합니다.
+        user = get_object_or_404(User, pk=uid)
 
         if user in board.likes.all():
             board.likes.remove(user)
@@ -284,10 +295,36 @@ class AddLikeView(APIView):
             message = "좋아요가 추가되었습니다."
             check_like = True
 
-        like_count = board.likes.count()  # 좋아요 개수를 업데이트합니다.
+        like_count = board.likes.count()
 
         return Response({
             "like_count": like_count,
             "message": message,
             "check_like": check_like
         }, status=status.HTTP_200_OK)
+
+
+# #add count
+# class AddLikeView(APIView):
+#     def post(self, request, pk):
+#         board = get_object_or_404(Board, pk=pk)
+#         uid = request.data.get('uid')
+#         user = get_object_or_404(User, pk=uid)  # 'uid' 대신 'pk'를 사용해야 합니다.
+
+#         if user in board.likes.all():
+#             board.likes.remove(user)
+#             message = "좋아요가 취소되었습니다."
+#             check_like = False
+#         else:
+#             board.likes.add(user)
+#             message = "좋아요가 추가되었습니다."
+#             check_like = True
+
+#         like_count = board.likes.count()  # 좋아요 개수를 업데이트합니다.
+
+#         return Response({
+#             "like_count": like_count,
+#             "message": message,
+#             "check_like": check_like
+#         }, status=status.HTTP_200_OK)
+

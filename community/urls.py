@@ -19,4 +19,5 @@ urlpatterns = [
     path("mycomment/<str:uid>/",MyCommentsView.as_view()),
     #add like
     path("like_add_count/<int:pk>/",AddLikeView.as_view()),
+    path('check_like/<int:pk>/', AddLikeView.as_view(), name='check_like'),
 ]
