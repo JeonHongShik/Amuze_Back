@@ -234,7 +234,7 @@ class GetMyBoardBookmarksView(APIView):
 
 class BoardBookmarkCreateView(APIView):
     def post(self, request):
-        uid = request.data.get('uid')
+        uid = request.data.get('author')
         if uid is None:
             return Response({'message': 'uid를 제공해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
