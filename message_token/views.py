@@ -81,7 +81,19 @@ class mynotificationsviews(APIView):
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
     
-    
+class NotificationDeleteView(APIView):
+    def delete(self, request, pk):
+        uid = request.data.get('uid')
+        try:
+            notification = Notification.objects.get(pk=pk, uid=uid)
+        except Notification.DoesNotExist:
+            return Response({"detail": "알림이 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            notification.delete()
+            return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     
     
