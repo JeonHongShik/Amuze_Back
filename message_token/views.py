@@ -44,7 +44,7 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
         Notification.objects.create(
             uid=user,
             title=instance.board.title,
-            content=f'{instance.board.title} 새로운 댓글이 달렸어요!',
+            content=f'{instance.content}',
             board_id=instance.board,
         )
 
