@@ -26,6 +26,10 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
         if user == comment_author:
             return
 
+        # 이미 알림을 전송한 경우, 더 이상 알림을 전송하지 않습니다.
+        if Notification.objects.filter(uid=user, board_id=instance.board).exists():
+            return
+
         registration_token = user.messagingToken
         print('Registration token:', registration_token)
 
@@ -50,6 +54,8 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
             content=f'{instance.content}',
             board_id=instance.board,
         )
+        
+        
 # @receiver(post_save, sender=Comment)
 # def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
 #     if created:
