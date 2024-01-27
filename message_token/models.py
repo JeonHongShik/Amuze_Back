@@ -8,5 +8,5 @@ class Notification(models.Model):
     uid = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
     title = models.CharField(max_length=100)
     content = models.TextField()
-    board_id = models.ForeignKey(Board, on_delete=models.CASCADE,null=True)
+    board_id = models.ForeignKey(Board, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
