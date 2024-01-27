@@ -45,7 +45,7 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
             uid=user,
             title=instance.board.title,
             content=f'{instance.content}',
-            board_id=instance.board.id,
+            board_id=instance.board,
         )
 
 # @receiver(post_save, sender=Comment)
