@@ -6,7 +6,7 @@ from community.models import Board
 # Create your models here.
 class Notification(models.Model):
     uid = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
-    title = models.CharField(max_length=100)
+    title = models.ForeignKey(Board, on_delete=models.CASCADE)
     content = models.TextField()
-    board_id = models.ForeignKey(Board, on_delete=models.CASCADE)
+    board_id = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

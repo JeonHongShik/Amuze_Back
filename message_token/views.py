@@ -29,15 +29,12 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
         registration_token = user.messagingToken
         print('Registration token:', registration_token)
 
-        # 'notification' 메시지를 함께 보내도록 수정
         message = messaging.Message(
             notification=messaging.Notification(
                 title='새로운 댓글 알림',
                 body=f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
             ),
-            data={
-                'board_id': str(instance.board.id)
-            },
+            data={'board_id':str(instance.board.id)},
             token=registration_token,
         )
 
@@ -50,8 +47,7 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
             content=f'{instance.content}',
             board_id=instance.board,
         )
-        
-        
+
 # @receiver(post_save, sender=Comment)
 # def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
 #     if created:
