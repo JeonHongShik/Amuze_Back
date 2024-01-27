@@ -29,12 +29,13 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
         registration_token = user.messagingToken
         print('Registration token:', registration_token)
 
+        # 'data' 메시지만 보내도록 수정
         message = messaging.Message(
-            notification=messaging.Notification(
-                title='새로운 댓글 알림',
-                body=f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
-            ),
-            data={'board_id':str(instance.board.id)},
+            data={
+                'title': '새로운 댓글 알림',
+                'body': f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
+                'board_id': str(instance.board.id)
+            },
             token=registration_token,
         )
 
