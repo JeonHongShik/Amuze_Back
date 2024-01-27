@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     "consumer",  # 이력서
     "post",  # 공고
     "report",  # 신고
-    "message_token",
+    "messageing",
 ]
 
 
@@ -190,7 +190,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 class message_token_Config(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'message_token'
+    name = 'messageing'
     
     def ready(self):
-        import message_token.views  
+        import messageing.views  

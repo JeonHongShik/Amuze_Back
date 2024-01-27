@@ -1,6 +1,6 @@
 from django.urls import path,include
-from . import views
-from .views import mynotificationsviews,NotificationDeleteView
+from messageing import views
+from messageing.views import mynotificationsviews,NotificationDeleteView
 
 urlpatterns = [
     path('send_message/<str:uid>/', views.send_to_firebase_cloud_messaging),

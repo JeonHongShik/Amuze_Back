@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class MessageTokenConfig(AppConfig):
+class MessageingConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'message_token'
+    name = 'messageing'

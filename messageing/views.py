@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.response import Response
-from message_token.serializers import NotificationSerializer
+from messageing.serializers import NotificationSerializer
 from .models import Notification 
 from rest_framework.views import APIView
 from rest_framework import status
@@ -43,9 +43,9 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
 
         Notification.objects.create(
             uid=user,
-            title=instance.board.title,
+            title=instance.board,
             content=f'{instance.content}',
-            board_id=instance.board,
+            board_id=instance.board.id,
         )
 
 # @receiver(post_save, sender=Comment)
