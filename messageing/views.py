@@ -43,7 +43,7 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
 
         Notification.objects.create(
             uid=user,
-            title=instance.board,
+            title=message.notification.body,
             content=f'{instance.content}',
             board_id=instance.board.id,
         )
