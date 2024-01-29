@@ -7,7 +7,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Notification
-        fields = ['id','uid', 'title', 'content', 'board_id', 'created_at']
+        fields = ['id','uid', 'title','messagebody','content', 'board_id', 'created_at']
 
     def get_title(self, obj):
         return obj.title.title

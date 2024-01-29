@@ -32,7 +32,7 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
         message = messaging.Message(
             notification=messaging.Notification(
                 title='새로운 댓글 알림',
-                body=f'{instance.board.title}\n 새로운 댓글이 달렸어요!',
+                body=f'{instance.board.title}새로운 댓글이 달렸어요!',
             ),
             data={'board_id':str(instance.board.id)},
             token=registration_token,
@@ -43,7 +43,8 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
 
         Notification.objects.create(
             uid=user,
-            title=message.notification.body,
+            title=instance.board,
+            messagebody=message.notification.body,
             content=f'{instance.content}',
             board_id=instance.board.id,
         )
