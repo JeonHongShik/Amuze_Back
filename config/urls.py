@@ -24,9 +24,9 @@ from django.conf import settings
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="FireBase Swagger API",
-        default_version="v3.0",
-        description="FireBaseLogin Version 3.0",
+        title="Amuze APP Swagger",
+        default_version="Beta1.0",
+        description="Using FireBaseLogin / Beta 1.0",
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
