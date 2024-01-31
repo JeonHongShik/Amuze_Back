@@ -12,6 +12,9 @@ from .models import Notification
 from rest_framework.views import APIView
 from rest_framework import status
 from django.db import transaction
+from pyfcm import FCMNotification
+from django.http import JsonResponse
+import json
 
 
 @receiver(post_save, sender=Comment)
@@ -49,6 +52,25 @@ def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
             board_id=instance.board.id,
         )
 
+def send_to_all_user_notifications(request):
+    all_user_tokens = User.objects.exclude(uid='admin').values_list("messagingToken", flat=True)
+    all_user_tokens = list(all_user_tokens)
+    
+    title = '새로운 공지사항'
+    body = '새로운 공지사항 알림'
+    
+    message = messaging.MulticastMessage(
+        data = {'title' : title  , 'body' : body},
+        tokens = all_user_tokens
+    )
+    
+    Response = messaging.send_multicast(message)
+    print(Response)
+    if Response.success_count > 0:
+        return JsonResponse({"message" : "알람요청성공"})
+    else:
+        return JsonResponse({"message" : "알람요청실패"})
+    
 # @receiver(post_save, sender=Comment)
 # def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
 #     if created:
