@@ -71,6 +71,45 @@ def send_to_all_user_notifications(request):
     else:
         return JsonResponse({"message" : "알람요청실패"})
     
+        
+class mynotificationsviews(APIView):
+    def get(self, request, uid, format=None):
+        notifications = Notification.objects.filter(uid=uid)
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
+    
+class NotificationDeleteView(APIView):
+    def delete(self, request, pk):
+        uid = request.data.get('uid')
+        try:
+            notification = Notification.objects.get(pk=pk, uid=uid)
+        except Notification.DoesNotExist:
+            return Response({"detail": "알림이 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            notification.delete()
+            return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+class AllNotificationDeleteView(APIView):
+    def delete(self, request):
+        uid = request.data.get('uid')
+        try:
+            notifications = Notification.objects.filter(uid=uid)
+            if not notifications.exists():
+                return Response({"detail": "해당 uid의 알림이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        try:
+            notifications.delete()
+            return Response({"message": "해당 uid의 모든 알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 # @receiver(post_save, sender=Comment)
 # def send_to_firebase_cloud_messaging(sender, instance, created, **kwargs):
 #     if created:
@@ -97,29 +136,6 @@ def send_to_all_user_notifications(request):
 #             board_id=instance.board,  # 수정된 부분
 #         )
 
-        
-class mynotificationsviews(APIView):
-    def get(self, request, uid, format=None):
-        notifications = Notification.objects.filter(uid=uid)
-        serializer = NotificationSerializer(notifications, many=True)
-        return Response(serializer.data)
-    
-class NotificationDeleteView(APIView):
-    def delete(self, request, pk):
-        uid = request.data.get('uid')
-        try:
-            notification = Notification.objects.get(pk=pk, uid=uid)
-        except Notification.DoesNotExist:
-            return Response({"detail": "알림이 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        
-        try:
-            notification.delete()
-            return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"detail": f"서버 내부 오류가 발생하였습니다. 오류 내용: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-    
-    
 # def send_to_firebase_cloud_messaging(request, uid):  
 #     user = User.objects.get(uid=uid)
 #     registration_token = user.messagingToken
